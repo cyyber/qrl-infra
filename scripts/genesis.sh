@@ -17,8 +17,16 @@ fi
 if [ -x "${BUILD_DIR}/qrysmctl" ]; then
   export PATH="${BUILD_DIR}:${PATH}"
 fi
+REUSE_KEYS=false
+while [[ "${1:-}" == --* ]]; do
+  case "$1" in
+    --reuse-keys) REUSE_KEYS=true; shift ;;
+    *) echo "Unknown option: $1"; exit 1 ;;
+  esac
+done
+
 NUM_VALIDATORS="${1:-2000}"
-NUM_NODES="${2:-20}"
+NUM_NODES="${2:-2}"
 GENESIS_DELAY="${3:-600}"  # seconds from now
 EXECUTION_ADDRESS="${EXECUTION_ADDRESS:-Qaf84bc06703edfc371a0177ac8b482622d5ad242}"
 KEYSTORE_PASSWORD="${KEYSTORE_PASSWORD:-testpassword123}"
@@ -28,6 +36,7 @@ echo "    Validators: ${NUM_VALIDATORS}"
 echo "    Nodes: ${NUM_NODES}"
 echo "    Genesis delay: ${GENESIS_DELAY}s"
 echo "    Execution address: ${EXECUTION_ADDRESS}"
+echo "    Reuse keys: ${REUSE_KEYS}"
 
 mkdir -p "${OUTPUT_DIR}"
 
@@ -42,19 +51,30 @@ fi
 # -------------------------------------------------------
 # Step 2: Generate validator keys using staking-deposit-cli
 # -------------------------------------------------------
-echo "==> Generating ${NUM_VALIDATORS} validator keys..."
+if [ "$REUSE_KEYS" = true ]; then
+  # Verify existing keys exist
+  if ! ls "${OUTPUT_DIR}/validator_keys/deposit_data-"*.json &>/dev/null; then
+    echo "FAIL: --reuse-keys specified but no existing keys found in ${OUTPUT_DIR}/validator_keys/"
+    echo "      Run without --reuse-keys first to generate keys."
+    exit 1
+  fi
+  EXISTING_COUNT=$(ls "${OUTPUT_DIR}/validator_keys/keystore-"*.json 2>/dev/null | wc -l)
+  echo "==> Reusing ${EXISTING_COUNT} existing validator keystores"
+else
+  echo "==> Generating ${NUM_VALIDATORS} validator keys..."
 
-# Write keystore password to file
-echo -n "${KEYSTORE_PASSWORD}" > "${OUTPUT_DIR}/keystore-password.txt"
+  # Write keystore password to file
+  echo -n "${KEYSTORE_PASSWORD}" > "${OUTPUT_DIR}/keystore-password.txt"
 
-staking-deposit-cli new-seed \
-  --num-validators "${NUM_VALIDATORS}" \
-  --folder "${OUTPUT_DIR}/validator_keys" \
-  --chain-name testnet \
-  --execution-address "${EXECUTION_ADDRESS}" \
-  --keystore-password-file "${OUTPUT_DIR}/keystore-password.txt"
+  staking-deposit-cli new-seed \
+    --num-validators "${NUM_VALIDATORS}" \
+    --folder "${OUTPUT_DIR}/validator_keys" \
+    --chain-name testnet \
+    --execution-address "${EXECUTION_ADDRESS}" \
+    --keystore-password-file "${OUTPUT_DIR}/keystore-password.txt"
 
-echo "==> Generated ${NUM_VALIDATORS} validator keystores"
+  echo "==> Generated ${NUM_VALIDATORS} validator keystores"
+fi
 
 # -------------------------------------------------------
 # Step 3: Generate genesis using deposit data
@@ -132,5 +152,9 @@ echo "==> Done!"
 echo "    Genesis files: ${OUTPUT_DIR}/"
 echo "    Per-node keystores: ${OUTPUT_DIR}/node-{0..${NUM_NODES}}/"
 echo "    Chain starts at: $(date -d "+${GENESIS_DELAY} seconds" 2>/dev/null || date -v+${GENESIS_DELAY}S)"
-echo ""
-echo "    IMPORTANT: Save the mnemonic printed above! You need it to regenerate keys."
+if [ "$REUSE_KEYS" = false ]; then
+  echo ""
+  echo "    IMPORTANT: Save the mnemonic printed above! You need it to regenerate keys."
+  echo "    To regenerate genesis with the same keys later, run:"
+  echo "    ./scripts/genesis.sh --reuse-keys ${NUM_VALIDATORS} ${NUM_NODES} <delay>"
+fi

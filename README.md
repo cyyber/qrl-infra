@@ -66,6 +66,9 @@ make build
 # 2000 validators, 2 nodes, 10-minute delay before chain starts
 ./scripts/genesis.sh 2000 2 600
 
+# Reuse existing keys, only regenerate genesis with a new start time (fast)
+./scripts/genesis.sh --reuse-keys 2000 2 600
+
 # Or with S3 upload
 S3_BUCKET=your-bucket ./scripts/genesis.sh 2000 2 600
 ```
