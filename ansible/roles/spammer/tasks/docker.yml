@@ -1,0 +1,25 @@
+---
+- name: Pull tx-fuzz Docker image
+  docker_image:
+    name: "{{ spammer_docker_image }}"
+    source: pull
+    force_source: true
+
+- name: Run tx-fuzz container
+  docker_container:
+    name: tx-fuzz
+    image: "{{ spammer_docker_image }}"
+    state: started
+    restart_policy: unless-stopped
+    network_mode: host
+    command: >
+      spam
+      --rpc http://{{ target_execution_ip }}:{{ gqrl_http_port | default(8545) }}
+      --seed {{ spammer_seed }}
+      --txcount {{ spammer_tx_count }}
+      --accounts {{ spammer_accounts }}
+      {{ spammer_extra_flags }}
+    log_driver: json-file
+    log_options:
+      max-size: "100m"
+      max-file: "5"

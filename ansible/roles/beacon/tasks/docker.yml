@@ -1,0 +1,35 @@
+---
+- name: Pull beacon-chain Docker image
+  docker_image:
+    name: "{{ beacon_docker_image }}"
+    source: pull
+    force_source: true
+
+- name: Run beacon-chain container
+  docker_container:
+    name: beacon-chain
+    image: "{{ beacon_docker_image }}"
+    state: started
+    restart_policy: unless-stopped
+    network_mode: host
+    volumes:
+      - "{{ data_dir }}:{{ data_dir }}"
+    command: >
+      --datadir {{ data_dir }}/beacon
+      --execution-endpoint {{ execution_endpoint }}
+      --jwt-secret {{ jwt_secret_path }}
+      --genesis-state {{ genesis_ssz_path }}
+      --chain-config-file {{ chain_config_path }}
+      --p2p-tcp-port {{ beacon_p2p_tcp_port }}
+      --p2p-udp-port {{ beacon_p2p_udp_port }}
+      --rpc-host 0.0.0.0 --rpc-port {{ beacon_grpc_port }}
+      --grpc-gateway-host 0.0.0.0 --grpc-gateway-port {{ beacon_gateway_port }}
+      --monitoring-host 0.0.0.0 --monitoring-port {{ beacon_monitoring_port }}
+      --min-sync-peers {{ min_sync_peers }}
+      --accept-terms-of-use
+      {% if beacon_bootnodes != "" %}--bootstrap-node {{ beacon_bootnodes }}{% endif %}
+      {{ beacon_extra_flags }}
+    log_driver: json-file
+    log_options:
+      max-size: "100m"
+      max-file: "5"

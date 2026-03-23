@@ -1,0 +1,54 @@
+---
+# Collect logs and metrics from all nodes
+
+- name: Collect logs from all nodes
+  hosts: all
+  tasks:
+    - name: Create local output directory
+      delegate_to: localhost
+      become: false
+      file:
+        path: "{{ playbook_dir }}/../../collected/{{ inventory_hostname }}"
+        state: directory
+      run_once: false
+
+    - name: Archive logs
+      archive:
+        path: "{{ data_dir }}/logs/"
+        dest: /tmp/qrl-logs.tar.gz
+        format: gz
+      ignore_errors: true
+
+    - name: Fetch logs
+      fetch:
+        src: /tmp/qrl-logs.tar.gz
+        dest: "{{ playbook_dir }}/../../collected/{{ inventory_hostname }}/"
+        flat: true
+      ignore_errors: true
+
+    - name: Get service status
+      shell: |
+        if [ "{{ deploy_mode }}" = "docker" ]; then
+          docker ps --format '{{ '{{' }}.Names{{ '}}' }}\t{{ '{{' }}.Status{{ '}}' }}'
+        else
+          systemctl status gqrl beacon-chain validator tx-fuzz 2>/dev/null || true
+        fi
+      register: service_status
+
+    - name: Save service status
+      delegate_to: localhost
+      become: false
+      copy:
+        content: "{{ service_status.stdout }}"
+        dest: "{{ playbook_dir }}/../../collected/{{ inventory_hostname }}/service-status.txt"
+
+    - name: Get disk usage
+      shell: df -h {{ data_dir }}
+      register: disk_usage
+
+    - name: Save disk usage
+      delegate_to: localhost
+      become: false
+      copy:
+        content: "{{ disk_usage.stdout }}"
+        dest: "{{ playbook_dir }}/../../collected/{{ inventory_hostname }}/disk-usage.txt"

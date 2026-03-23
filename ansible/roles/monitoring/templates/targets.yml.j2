@@ -1,0 +1,22 @@
+# Auto-generated Prometheus targets from Ansible inventory
+
+- targets:
+{% for host in groups['execution'] %}
+    - {{ hostvars[host]['private_ip'] }}:6060
+{% endfor %}
+  labels:
+    job: execution
+
+- targets:
+{% for host in groups['beacon'] %}
+    - {{ hostvars[host]['private_ip'] }}:8080
+{% endfor %}
+  labels:
+    job: beacon
+
+- targets:
+{% for host in groups['validator'] %}
+    - {{ hostvars[host]['private_ip'] }}:8080
+{% endfor %}
+  labels:
+    job: validator

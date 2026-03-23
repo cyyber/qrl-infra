@@ -1,0 +1,37 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - alerts.yml
+
+scrape_configs:
+  - job_name: execution
+    metrics_path: /debug/metrics/prometheus
+    file_sd_configs:
+      - files:
+          - targets.yml
+    relabel_configs:
+      - source_labels: [job]
+        regex: execution
+        action: keep
+
+  - job_name: beacon
+    metrics_path: /metrics
+    file_sd_configs:
+      - files:
+          - targets.yml
+    relabel_configs:
+      - source_labels: [job]
+        regex: beacon
+        action: keep
+
+  - job_name: validator
+    metrics_path: /metrics
+    file_sd_configs:
+      - files:
+          - targets.yml
+    relabel_configs:
+      - source_labels: [job]
+        regex: validator
+        action: keep

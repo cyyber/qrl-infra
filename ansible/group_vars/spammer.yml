@@ -1,0 +1,8 @@
+# Spammer (tx-fuzz) variables
+
+spammer_seed: 0
+spammer_tx_count: 100
+spammer_accounts: 10
+
+# Extra flags to pass to tx-fuzz
+spammer_extra_flags: ""

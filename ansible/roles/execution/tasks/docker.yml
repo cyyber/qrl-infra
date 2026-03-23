@@ -1,0 +1,50 @@
+---
+- name: Pull gqrl Docker image
+  docker_image:
+    name: "{{ gqrl_docker_image }}"
+    source: pull
+    force_source: true
+
+- name: Check if gqrl data is initialized
+  stat:
+    path: "{{ data_dir }}/execution/gqrl/chaindata"
+  register: gqrl_chaindata
+
+- name: Initialize gqrl with genesis
+  docker_container:
+    name: gqrl-init
+    image: "{{ gqrl_docker_image }}"
+    command: >
+      init --datadir /data/execution {{ genesis_json_path }}
+    volumes:
+      - "{{ data_dir }}:{{ data_dir }}"
+    auto_remove: true
+    detach: false
+  when: not gqrl_chaindata.stat.exists
+
+- name: Run gqrl container
+  docker_container:
+    name: gqrl
+    image: "{{ gqrl_docker_image }}"
+    state: started
+    restart_policy: unless-stopped
+    network_mode: host
+    user: "{{ ansible_user_uid | default(omit) }}"
+    volumes:
+      - "{{ data_dir }}:{{ data_dir }}"
+    command: >
+      --datadir {{ data_dir }}/execution
+      --http --http.addr 0.0.0.0 --http.port {{ gqrl_http_port }}
+      --http.api qrl,net,web3,engine
+      --authrpc.addr 0.0.0.0 --authrpc.port {{ gqrl_auth_port }}
+      --authrpc.jwtsecret {{ jwt_secret_path }}
+      --authrpc.vhosts=*
+      --port {{ gqrl_p2p_port }}
+      --metrics --metrics.addr 0.0.0.0 --metrics.port {{ gqrl_metrics_port }}
+      --networkid {{ chain_id }}
+      {% if execution_bootnodes != "" %}--bootnodes {{ execution_bootnodes }}{% endif %}
+      {{ gqrl_extra_flags }}
+    log_driver: json-file
+    log_options:
+      max-size: "100m"
+      max-file: "5"

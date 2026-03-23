@@ -1,0 +1,15 @@
+---
+- name: restart tx-fuzz
+  systemd:
+    name: tx-fuzz
+    state: restarted
+    daemon_reload: true
+  when: deploy_mode == "binary"
+
+- name: restart tx-fuzz
+  docker_container:
+    name: tx-fuzz
+    state: started
+    restart: true
+  when: deploy_mode == "docker"
+  listen: restart tx-fuzz

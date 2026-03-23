@@ -1,0 +1,34 @@
+groups:
+  - name: qrl-alerts
+    rules:
+      - alert: NodeDown
+        expr: up == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Node {{ $labels.instance }} is down"
+
+      - alert: FinalityDelay
+        expr: (beacon_head_slot - beacon_finalized_slot) > 256
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Finality delay exceeds 2 epochs on {{ $labels.instance }}"
+
+      - alert: HighMissedSlots
+        expr: rate(beacon_missed_slot_count[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High missed slot rate on {{ $labels.instance }}"
+
+      - alert: LowPeerCount
+        expr: p2p_peer_count < 3
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low peer count ({{ $value }}) on {{ $labels.instance }}"

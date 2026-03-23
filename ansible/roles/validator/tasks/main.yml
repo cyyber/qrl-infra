@@ -1,0 +1,11 @@
+---
+- name: Set up validator wallet and import keys
+  include_tasks: wallet.yml
+
+- name: Deploy validator (Docker)
+  include_tasks: docker.yml
+  when: deploy_mode == "docker"
+
+- name: Deploy validator (Binary)
+  include_tasks: binary.yml
+  when: deploy_mode == "binary"

@@ -1,0 +1,35 @@
+---
+- name: Download gqrl binary
+  get_url:
+    url: "{{ gqrl_binary_url }}"
+    dest: /usr/local/bin/gqrl
+    mode: "0755"
+  when: gqrl_binary_url != ""
+
+- name: Check if gqrl data is initialized
+  stat:
+    path: "{{ data_dir }}/execution/gqrl/chaindata"
+  register: gqrl_chaindata
+
+- name: Initialize gqrl with genesis
+  command: >
+    /usr/local/bin/gqrl init
+    --datadir {{ data_dir }}/execution
+    {{ genesis_json_path }}
+  become: true
+  become_user: qrl
+  when: not gqrl_chaindata.stat.exists
+
+- name: Deploy gqrl systemd service
+  template:
+    src: gqrl.service.j2
+    dest: /etc/systemd/system/gqrl.service
+    mode: "0644"
+  notify: restart gqrl
+
+- name: Enable and start gqrl
+  systemd:
+    name: gqrl
+    enabled: true
+    state: started
+    daemon_reload: true

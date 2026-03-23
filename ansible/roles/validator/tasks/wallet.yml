@@ -1,0 +1,63 @@
+---
+- name: Create validator directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: qrl
+    group: qrl
+    mode: "0700"
+  loop:
+    - "{{ data_dir }}/validator"
+    - "{{ data_dir }}/validator/keystores"
+
+- name: Write wallet password file
+  copy:
+    content: "{{ wallet_password }}"
+    dest: "{{ wallet_password_file }}"
+    owner: qrl
+    group: qrl
+    mode: "0600"
+
+- name: Copy keystore password file
+  copy:
+    src: "{{ playbook_dir }}/../../genesis-data/node-{{ node_index }}/keystore-password.txt"
+    dest: "{{ keystore_password_file }}"
+    owner: qrl
+    group: qrl
+    mode: "0600"
+
+- name: Copy keystores for this node
+  copy:
+    src: "{{ playbook_dir }}/../../genesis-data/node-{{ node_index }}/keystores/"
+    dest: "{{ data_dir }}/validator/keystores/"
+    owner: qrl
+    group: qrl
+    mode: "0600"
+
+- name: Check if wallet exists
+  stat:
+    path: "{{ wallet_dir }}"
+  register: wallet_stat
+
+- name: Create validator wallet
+  command: >
+    validator wallet create
+    --wallet-dir {{ wallet_dir }}
+    --keymanager-kind imported
+    --wallet-password-file {{ wallet_password_file }}
+    --accept-terms-of-use
+  become: true
+  become_user: qrl
+  when: not wallet_stat.stat.exists
+
+- name: Import keystores into wallet
+  command: >
+    validator accounts import
+    --wallet-dir {{ wallet_dir }}
+    --keys-dir {{ data_dir }}/validator/keystores
+    --wallet-password-file {{ wallet_password_file }}
+    --account-password-file {{ keystore_password_file }}
+    --accept-terms-of-use
+  become: true
+  become_user: qrl
+  when: not wallet_stat.stat.exists

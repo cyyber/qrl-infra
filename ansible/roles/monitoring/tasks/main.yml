@@ -1,0 +1,52 @@
+---
+- name: Create monitoring directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: qrl
+    group: qrl
+    mode: "0755"
+  loop:
+    - "{{ data_dir }}/monitoring"
+    - "{{ data_dir }}/monitoring/prometheus"
+    - "{{ data_dir }}/monitoring/grafana"
+
+- name: Copy Prometheus config
+  copy:
+    src: "{{ playbook_dir }}/../../monitoring/prometheus/prometheus.yml"
+    dest: "{{ data_dir }}/monitoring/prometheus/prometheus.yml"
+    owner: qrl
+    group: qrl
+
+- name: Copy Prometheus alerts
+  copy:
+    src: "{{ playbook_dir }}/../../monitoring/prometheus/alerts.yml"
+    dest: "{{ data_dir }}/monitoring/prometheus/alerts.yml"
+    owner: qrl
+    group: qrl
+
+- name: Generate Prometheus target files from inventory
+  template:
+    src: targets.yml.j2
+    dest: "{{ data_dir }}/monitoring/prometheus/targets.yml"
+    owner: qrl
+    group: qrl
+
+- name: Copy monitoring docker-compose
+  copy:
+    src: "{{ playbook_dir }}/../../monitoring/docker-compose.monitoring.yml"
+    dest: "{{ data_dir }}/monitoring/docker-compose.yml"
+    owner: qrl
+    group: qrl
+
+- name: Copy Grafana provisioning
+  copy:
+    src: "{{ playbook_dir }}/../../monitoring/grafana/"
+    dest: "{{ data_dir }}/monitoring/grafana/"
+    owner: qrl
+    group: qrl
+
+- name: Start monitoring stack
+  community.docker.docker_compose_v2:
+    project_src: "{{ data_dir }}/monitoring"
+    state: present

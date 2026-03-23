@@ -1,0 +1,21 @@
+---
+- name: Download beacon-chain binary
+  get_url:
+    url: "{{ beacon_binary_url }}"
+    dest: /usr/local/bin/beacon-chain
+    mode: "0755"
+  when: beacon_binary_url != ""
+
+- name: Deploy beacon-chain systemd service
+  template:
+    src: beacon-chain.service.j2
+    dest: /etc/systemd/system/beacon-chain.service
+    mode: "0644"
+  notify: restart beacon-chain
+
+- name: Enable and start beacon-chain
+  systemd:
+    name: beacon-chain
+    enabled: true
+    state: started
+    daemon_reload: true

@@ -1,0 +1,8 @@
+---
+- name: Deploy beacon node (Docker)
+  include_tasks: docker.yml
+  when: deploy_mode == "docker"
+
+- name: Deploy beacon node (Binary)
+  include_tasks: binary.yml
+  when: deploy_mode == "binary"

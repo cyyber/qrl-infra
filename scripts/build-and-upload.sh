@@ -1,0 +1,107 @@
+#!/bin/bash
+set -euo pipefail
+
+# -------------------------------------------------------
+# Build QRL binaries from source and upload to S3
+# -------------------------------------------------------
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+ROOT_DIR="$(dirname "$SCRIPT_DIR")"
+BUILD_DIR="${ROOT_DIR}/build"
+
+# Source repos (adjust paths if needed)
+GO_QRL_DIR="${GO_QRL_DIR:-$(cd "${ROOT_DIR}/../go-qrl" 2>/dev/null && pwd || echo "")}"
+QRYSM_DIR="${QRYSM_DIR:-$(cd "${ROOT_DIR}/../qrysm" 2>/dev/null && pwd || echo "")}"
+TX_FUZZ_DIR="${TX_FUZZ_DIR:-$(cd "${ROOT_DIR}/../tx-fuzz" 2>/dev/null && pwd || echo "")}"
+
+# S3 bucket from Terraform output
+S3_BUCKET="${S3_BUCKET:-$(cd "${ROOT_DIR}/terraform" && terraform output -raw s3_bucket 2>/dev/null || echo "")}"
+
+if [ -z "$S3_BUCKET" ]; then
+  echo "ERROR: S3_BUCKET not set and could not read from terraform output."
+  echo "Usage: S3_BUCKET=your-bucket ./scripts/build-and-upload.sh"
+  echo "   or: run 'terraform apply' first"
+  exit 1
+fi
+
+mkdir -p "${BUILD_DIR}"
+
+# Target: Linux amd64 (EC2 instances)
+export GOOS=linux
+export GOARCH=amd64
+export CGO_ENABLED=1
+
+echo "==> Building for ${GOOS}/${GOARCH}"
+
+# -------------------------------------------------------
+# Build go-qrl (gqrl)
+# -------------------------------------------------------
+if [ -n "$GO_QRL_DIR" ] && [ -d "$GO_QRL_DIR" ]; then
+  echo "==> Building gqrl from ${GO_QRL_DIR}..."
+  cd "$GO_QRL_DIR"
+  go build -o "${BUILD_DIR}/gqrl" ./cmd/gqrl/
+  echo "    Built: ${BUILD_DIR}/gqrl"
+else
+  echo "SKIP: go-qrl not found at ${GO_QRL_DIR:-../go-qrl}"
+fi
+
+# -------------------------------------------------------
+# Build qrysm (beacon-chain, validator, qrysmctl, staking-deposit-cli)
+# -------------------------------------------------------
+if [ -n "$QRYSM_DIR" ] && [ -d "$QRYSM_DIR" ]; then
+  echo "==> Building beacon-chain from ${QRYSM_DIR}..."
+  cd "$QRYSM_DIR"
+  go build -o "${BUILD_DIR}/beacon-chain" ./cmd/beacon-chain/
+  echo "    Built: ${BUILD_DIR}/beacon-chain"
+
+  echo "==> Building validator from ${QRYSM_DIR}..."
+  go build -o "${BUILD_DIR}/validator" ./cmd/validator/
+  echo "    Built: ${BUILD_DIR}/validator"
+
+  echo "==> Building qrysmctl from ${QRYSM_DIR}..."
+  go build -o "${BUILD_DIR}/qrysmctl" ./cmd/qrysmctl/
+  echo "    Built: ${BUILD_DIR}/qrysmctl"
+
+  echo "==> Building staking-deposit-cli from ${QRYSM_DIR}..."
+  go build -o "${BUILD_DIR}/staking-deposit-cli" ./cmd/staking-deposit-cli/
+  echo "    Built: ${BUILD_DIR}/staking-deposit-cli"
+else
+  echo "SKIP: qrysm not found at ${QRYSM_DIR:-../qrysm}"
+fi
+
+# -------------------------------------------------------
+# Build tx-fuzz
+# -------------------------------------------------------
+if [ -n "$TX_FUZZ_DIR" ] && [ -d "$TX_FUZZ_DIR" ]; then
+  echo "==> Building tx-fuzz from ${TX_FUZZ_DIR}..."
+  cd "$TX_FUZZ_DIR"
+  go build -o "${BUILD_DIR}/tx-fuzz" .
+  echo "    Built: ${BUILD_DIR}/tx-fuzz"
+else
+  echo "SKIP: tx-fuzz not found at ${TX_FUZZ_DIR:-../tx-fuzz}"
+fi
+
+# -------------------------------------------------------
+# Upload to S3
+# -------------------------------------------------------
+echo ""
+echo "==> Uploading binaries to s3://${S3_BUCKET}/binaries/"
+
+for binary in gqrl beacon-chain validator qrysmctl staking-deposit-cli tx-fuzz; do
+  if [ -f "${BUILD_DIR}/${binary}" ]; then
+    aws s3 cp "${BUILD_DIR}/${binary}" "s3://${S3_BUCKET}/binaries/${binary}"
+    echo "    Uploaded: ${binary}"
+  fi
+done
+
+# -------------------------------------------------------
+# Print URLs for ansible group_vars
+# -------------------------------------------------------
+REGION=$(aws configure get region 2>/dev/null || echo "eu-north-1")
+echo ""
+echo "==> Done! Add these to ansible/group_vars/all.yml:"
+echo ""
+echo "gqrl_binary_url: \"https://${S3_BUCKET}.s3.${REGION}.amazonaws.com/binaries/gqrl\""
+echo "beacon_binary_url: \"https://${S3_BUCKET}.s3.${REGION}.amazonaws.com/binaries/beacon-chain\""
+echo "validator_binary_url: \"https://${S3_BUCKET}.s3.${REGION}.amazonaws.com/binaries/validator\""
+echo "spammer_binary_url: \"https://${S3_BUCKET}.s3.${REGION}.amazonaws.com/binaries/tx-fuzz\""

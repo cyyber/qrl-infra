@@ -1,0 +1,15 @@
+---
+- name: restart gqrl
+  systemd:
+    name: gqrl
+    state: restarted
+    daemon_reload: true
+  when: deploy_mode == "binary"
+
+- name: restart gqrl
+  docker_container:
+    name: gqrl
+    state: started
+    restart: true
+  when: deploy_mode == "docker"
+  listen: restart gqrl

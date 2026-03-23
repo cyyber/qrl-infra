@@ -1,0 +1,35 @@
+[Unit]
+Description=QRL Beacon Chain (qrysm)
+After=network-online.target gqrl.service
+Wants=network-online.target
+Requires=gqrl.service
+
+[Service]
+Type=simple
+User=qrl
+Group=qrl
+ExecStart=/usr/local/bin/beacon-chain \
+  --datadir {{ data_dir }}/beacon \
+  --execution-endpoint {{ execution_endpoint }} \
+  --jwt-secret {{ jwt_secret_path }} \
+  --genesis-state {{ genesis_ssz_path }} \
+  --chain-config-file {{ chain_config_path }} \
+  --p2p-tcp-port {{ beacon_p2p_tcp_port }} \
+  --p2p-udp-port {{ beacon_p2p_udp_port }} \
+  --rpc-host 0.0.0.0 --rpc-port {{ beacon_grpc_port }} \
+  --grpc-gateway-host 0.0.0.0 --grpc-gateway-port {{ beacon_gateway_port }} \
+  --monitoring-host 0.0.0.0 --monitoring-port {{ beacon_monitoring_port }} \
+  --min-sync-peers {{ min_sync_peers }} \
+  --accept-terms-of-use \
+{% if beacon_bootnodes != "" %}
+  --bootstrap-node {{ beacon_bootnodes }} \
+{% endif %}
+  {{ beacon_extra_flags | default('') }}
+Restart=always
+RestartSec=5
+LimitNOFILE=65536
+StandardOutput=append:{{ data_dir }}/logs/beacon-chain.log
+StandardError=append:{{ data_dir }}/logs/beacon-chain.log
+
+[Install]
+WantedBy=multi-user.target

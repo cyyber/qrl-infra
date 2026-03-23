@@ -1,0 +1,87 @@
+---
+- name: Install base packages
+  apt:
+    name:
+      - jq
+      - curl
+      - htop
+      - iotop
+      - awscli
+    state: present
+    update_cache: true
+
+- name: Create qrl user
+  user:
+    name: qrl
+    shell: /bin/bash
+    groups: docker
+    append: true
+
+- name: Ensure data directories exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: qrl
+    group: qrl
+    mode: "0755"
+  loop:
+    - "{{ data_dir }}"
+    - "{{ data_dir }}/execution"
+    - "{{ data_dir }}/beacon"
+    - "{{ data_dir }}/validator"
+    - "{{ data_dir }}/logs"
+
+- name: Distribute JWT secret
+  copy:
+    src: jwt.hex
+    dest: "{{ jwt_secret_path }}"
+    owner: qrl
+    group: qrl
+    mode: "0600"
+
+- name: Distribute genesis.json
+  copy:
+    src: genesis.json
+    dest: "{{ genesis_json_path }}"
+    owner: qrl
+    group: qrl
+    mode: "0644"
+  ignore_errors: true
+
+- name: Distribute genesis.ssz
+  copy:
+    src: genesis.ssz
+    dest: "{{ genesis_ssz_path }}"
+    owner: qrl
+    group: qrl
+    mode: "0644"
+  ignore_errors: true
+
+- name: Distribute chain config
+  copy:
+    src: config.yml
+    dest: "{{ chain_config_path }}"
+    owner: qrl
+    group: qrl
+    mode: "0644"
+  ignore_errors: true
+
+- name: Configure log rotation
+  copy:
+    dest: /etc/logrotate.d/qrl
+    content: |
+      {{ data_dir }}/logs/*.log {
+        daily
+        rotate 7
+        compress
+        missingok
+        notifempty
+        copytruncate
+      }
+
+- name: Set file descriptor limits for qrl user
+  copy:
+    dest: /etc/security/limits.d/99-qrl.conf
+    content: |
+      qrl soft nofile 65536
+      qrl hard nofile 65536

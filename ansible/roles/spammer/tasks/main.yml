@@ -1,0 +1,8 @@
+---
+- name: Deploy spammer (Docker)
+  include_tasks: docker.yml
+  when: deploy_mode == "docker"
+
+- name: Deploy spammer (Binary)
+  include_tasks: binary.yml
+  when: deploy_mode == "binary"

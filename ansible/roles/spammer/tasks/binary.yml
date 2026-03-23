@@ -1,0 +1,21 @@
+---
+- name: Download tx-fuzz binary
+  get_url:
+    url: "{{ spammer_binary_url }}"
+    dest: /usr/local/bin/tx-fuzz
+    mode: "0755"
+  when: spammer_binary_url != ""
+
+- name: Deploy tx-fuzz systemd service
+  template:
+    src: spammer.service.j2
+    dest: /etc/systemd/system/tx-fuzz.service
+    mode: "0644"
+  notify: restart tx-fuzz
+
+- name: Enable and start tx-fuzz
+  systemd:
+    name: tx-fuzz
+    enabled: true
+    state: started
+    daemon_reload: true

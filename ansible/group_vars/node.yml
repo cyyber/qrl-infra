@@ -1,0 +1,26 @@
+# Variables for QRL nodes (execution + beacon + validator on same machine)
+
+# Number of nodes that act as bootnodes (first N nodes)
+bootnode_count: 3
+
+# Execution (go-qrl)
+gqrl_http_port: 8545
+gqrl_auth_port: 8551
+gqrl_p2p_port: 30303
+gqrl_metrics_port: 6060
+execution_bootnodes: ""
+gqrl_extra_flags: ""
+
+# Beacon (qrysm)
+beacon_grpc_port: 4000
+beacon_gateway_port: 3500
+beacon_p2p_tcp_port: 13000
+beacon_p2p_udp_port: 12000
+beacon_monitoring_port: 8080
+beacon_bootnodes: ""
+min_sync_peers: 1
+beacon_extra_flags: ""
+
+# Validator (qrysm)
+validator_monitoring_port: 8081
+validator_extra_flags: ""

@@ -1,0 +1,112 @@
+---
+# Full deployment playbook
+# Each node runs execution + beacon + validator on the same machine
+# First 3 nodes act as bootnodes for peer discovery
+
+- name: Common setup on all nodes
+  hosts: all
+  roles:
+    - common
+
+# --- Phase 1: Start bootnodes (first 3 nodes) ---
+
+- name: Deploy execution on bootnodes
+  hosts: node[0:2]
+  roles:
+    - execution
+
+- name: Deploy beacon on bootnodes
+  hosts: node[0:2]
+  roles:
+    - beacon
+
+- name: Wait for bootnode beacons to start
+  hosts: node[0:2]
+  tasks:
+    - name: Wait for beacon API to be ready
+      uri:
+        url: "http://127.0.0.1:{{ beacon_gateway_port }}/qrl/v1/node/identity"
+        method: GET
+        status_code: 200
+      register: identity_check
+      until: identity_check.status == 200
+      retries: 30
+      delay: 10
+
+- name: Collect bootnode ENRs
+  hosts: node[0:2]
+  tasks:
+    - name: Get beacon ENR
+      uri:
+        url: "http://127.0.0.1:{{ beacon_gateway_port }}/qrl/v1/node/identity"
+        method: GET
+        return_content: true
+      register: beacon_identity
+
+    - name: Set beacon ENR fact
+      set_fact:
+        beacon_enr: "{{ beacon_identity.json.data.enr }}"
+
+    - name: Get execution enode
+      shell: |
+        if [ "{{ deploy_mode }}" = "docker" ]; then
+          docker exec gqrl gqrl attach --exec admin.nodeInfo.enr /data/execution/gqrl.ipc 2>/dev/null || \
+          docker exec gqrl gqrl attach --exec admin.nodeInfo.enode /data/execution/gqrl.ipc
+        else
+          gqrl attach --exec admin.nodeInfo.enr {{ data_dir }}/execution/gqrl.ipc 2>/dev/null || \
+          gqrl attach --exec admin.nodeInfo.enode {{ data_dir }}/execution/gqrl.ipc
+        fi
+      register: execution_enode
+      become: true
+      become_user: qrl
+
+    - name: Set execution enode fact
+      set_fact:
+        exec_enode: "{{ execution_enode.stdout | trim | replace('\"', '') }}"
+
+- name: Build bootnode lists
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Aggregate beacon bootnodes
+      set_fact:
+        beacon_bootnode_enrs: "{{ groups['node'][:3] | map('extract', hostvars, 'beacon_enr') | join(',') }}"
+        execution_bootnode_enodes: "{{ groups['node'][:3] | map('extract', hostvars, 'exec_enode') | join(',') }}"
+
+    - name: Share bootnode lists with all nodes
+      add_host:
+        name: "{{ item }}"
+        beacon_bootnodes: "{{ beacon_bootnode_enrs }}"
+        execution_bootnodes: "{{ execution_bootnode_enodes }}"
+      loop: "{{ groups['node'] }}"
+
+# --- Phase 2: Start remaining nodes with bootnode info ---
+
+- name: Deploy execution on remaining nodes
+  hosts: node[3:]
+  roles:
+    - execution
+
+- name: Deploy beacon on remaining nodes
+  hosts: node[3:]
+  roles:
+    - beacon
+
+# --- Phase 3: Start validators on all nodes ---
+
+- name: Deploy validators on all nodes
+  hosts: node
+  roles:
+    - validator
+
+# --- Phase 4: Spammers and monitoring ---
+
+- name: Deploy spammer nodes
+  hosts: spammer
+  roles:
+    - spammer
+
+- name: Deploy monitoring stack
+  hosts: monitoring
+  roles:
+    - monitoring

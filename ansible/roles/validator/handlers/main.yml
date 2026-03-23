@@ -1,0 +1,15 @@
+---
+- name: restart validator
+  systemd:
+    name: validator
+    state: restarted
+    daemon_reload: true
+  when: deploy_mode == "binary"
+
+- name: restart validator
+  docker_container:
+    name: validator
+    state: started
+    restart: true
+  when: deploy_mode == "docker"
+  listen: restart validator

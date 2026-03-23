@@ -1,0 +1,21 @@
+---
+- name: Download validator binary
+  get_url:
+    url: "{{ validator_binary_url }}"
+    dest: /usr/local/bin/validator
+    mode: "0755"
+  when: validator_binary_url != ""
+
+- name: Deploy validator systemd service
+  template:
+    src: validator.service.j2
+    dest: /etc/systemd/system/validator.service
+    mode: "0644"
+  notify: restart validator
+
+- name: Enable and start validator
+  systemd:
+    name: validator
+    enabled: true
+    state: started
+    daemon_reload: true

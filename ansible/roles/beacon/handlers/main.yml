@@ -1,0 +1,15 @@
+---
+- name: restart beacon-chain
+  systemd:
+    name: beacon-chain
+    state: restarted
+    daemon_reload: true
+  when: deploy_mode == "binary"
+
+- name: restart beacon-chain
+  docker_container:
+    name: beacon-chain
+    state: started
+    restart: true
+  when: deploy_mode == "docker"
+  listen: restart beacon-chain

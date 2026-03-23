@@ -1,0 +1,29 @@
+---
+- name: Pull validator Docker image
+  docker_image:
+    name: "{{ validator_docker_image }}"
+    source: pull
+    force_source: true
+
+- name: Run validator container
+  docker_container:
+    name: validator
+    image: "{{ validator_docker_image }}"
+    state: started
+    restart_policy: unless-stopped
+    network_mode: host
+    volumes:
+      - "{{ data_dir }}:{{ data_dir }}"
+    command: >
+      --datadir {{ data_dir }}/validator
+      --wallet-dir {{ wallet_dir }}
+      --wallet-password-file {{ wallet_password_file }}
+      --beacon-rpc-provider {{ beacon_rpc_endpoint }}
+      --chain-config-file {{ chain_config_path }}
+      --monitoring-host 0.0.0.0 --monitoring-port {{ validator_monitoring_port }}
+      --accept-terms-of-use
+      {{ validator_extra_flags }}
+    log_driver: json-file
+    log_options:
+      max-size: "100m"
+      max-file: "5"

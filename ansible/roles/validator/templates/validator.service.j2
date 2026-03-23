@@ -1,0 +1,27 @@
+[Unit]
+Description=QRL Validator (qrysm)
+After=network-online.target beacon-chain.service
+Wants=network-online.target
+Requires=beacon-chain.service
+
+[Service]
+Type=simple
+User=qrl
+Group=qrl
+ExecStart=/usr/local/bin/validator \
+  --datadir {{ data_dir }}/validator \
+  --wallet-dir {{ wallet_dir }} \
+  --wallet-password-file {{ wallet_password_file }} \
+  --beacon-rpc-provider {{ beacon_rpc_endpoint }} \
+  --chain-config-file {{ chain_config_path }} \
+  --monitoring-host 0.0.0.0 --monitoring-port {{ validator_monitoring_port }} \
+  --accept-terms-of-use \
+  {{ validator_extra_flags | default('') }}
+Restart=always
+RestartSec=5
+LimitNOFILE=65536
+StandardOutput=append:{{ data_dir }}/logs/validator.log
+StandardError=append:{{ data_dir }}/logs/validator.log
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,35 @@
+# Terraform
+*.tfstate
+*.tfstate.backup
+.terraform/
+.terraform.lock.hcl
+crash.log
+
+# Ansible
+*.retry
+
+# Secrets
+secrets/
+jwt.hex
+*.pem
+*.key
+**/keystore-password.txt
+**/wallet-password.txt
+
+# Genesis artifacts
+genesis-data/
+ansible/roles/common/files/genesis.json
+ansible/roles/common/files/genesis.ssz
+ansible/roles/common/files/jwt.hex
+ansible/roles/common/files/config.yml
+
+# OS
+.DS_Store
+*.swp
+*.swo
+
+# IDE
+.idea/
+.vscode/
+.claude/
+*.iml

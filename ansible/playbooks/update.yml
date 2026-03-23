@@ -1,0 +1,33 @@
+---
+# Rolling update playbook
+# Usage:
+#   ansible-playbook playbooks/update.yml -e "service=beacon" -e "image=theqrl/qrysm-beacon-chain:v1.2.3"
+#   ansible-playbook playbooks/update.yml -e "service=execution" -e "binary_url=https://..."
+#   ansible-playbook playbooks/update.yml -l "node[0:4]" -e "service=beacon"  # update first 5 only
+
+- name: Update execution layer
+  hosts: node
+  serial: 1
+  roles:
+    - { role: execution, tags: ['update'] }
+  when: service == "execution"
+
+- name: Update beacon chain
+  hosts: node
+  serial: 1
+  roles:
+    - { role: beacon, tags: ['update'] }
+  when: service == "beacon"
+
+- name: Update validator
+  hosts: node
+  serial: 5
+  roles:
+    - { role: validator, tags: ['update'] }
+  when: service == "validator"
+
+- name: Update spammer
+  hosts: spammer
+  roles:
+    - { role: spammer, tags: ['update'] }
+  when: service == "spammer"

@@ -1,0 +1,37 @@
+# Global variables for all QRL nodes
+
+deploy_mode: "docker"  # "docker" or "binary"
+
+qrl_network: "stresstest"
+chain_id: 1
+
+data_dir: "/data"
+jwt_secret_path: "/data/jwt.hex"
+genesis_json_path: "/data/genesis.json"
+genesis_ssz_path: "/data/genesis.ssz"
+chain_config_path: "/data/config.yml"
+
+# Validator wallet
+wallet_dir: "/data/validator/wallet"
+wallet_password_file: "/data/validator/wallet-password.txt"
+keystore_password_file: "/data/validator/keystore-password.txt"
+wallet_password: "walletpassword123"
+
+# Docker images
+gqrl_docker_image: "theqrl/go-qrl:latest"
+beacon_docker_image: "theqrl/qrysm-beacon-chain:latest"
+validator_docker_image: "theqrl/qrysm-validator:latest"
+spammer_docker_image: "theqrl/tx-fuzz:latest"
+
+# Binary URLs (used when deploy_mode=binary)
+gqrl_binary_url: ""
+beacon_binary_url: ""
+validator_binary_url: ""
+spammer_binary_url: ""
+
+# Localhost endpoints (all services on same machine)
+execution_endpoint: "http://127.0.0.1:8551"
+beacon_rpc_endpoint: "127.0.0.1:4000"
+
+# Accept terms of service for non-interactive runs
+accept_tos: true
