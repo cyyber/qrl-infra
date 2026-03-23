@@ -84,6 +84,7 @@ DEPOSIT_FILE=$(ls "${OUTPUT_DIR}/validator_keys/deposit_data-"*.json | head -1)
 echo "==> Generating genesis from deposit data: ${DEPOSIT_FILE}"
 
 qrysmctl testnet generate-genesis \
+  --num-validators "${NUM_VALIDATORS}" \
   --deposit-json-file "${DEPOSIT_FILE}" \
   --genesis-time-delay "${GENESIS_DELAY}" \
   --output-ssz "${OUTPUT_DIR}/genesis.ssz" \
