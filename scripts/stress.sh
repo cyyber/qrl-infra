@@ -27,7 +27,7 @@ echo "    Beacon API: http://${BEACON_IP}:3500"
 
 # Wait for chain to start producing blocks
 echo "==> Waiting for chain to start..."
-until curl -sf "http://${BEACON_IP}:3500/eth/v1/beacon/headers/head" > /dev/null 2>&1; do
+until curl -sf "http://${BEACON_IP}:3500/qrl/v1/beacon/headers/head" > /dev/null 2>&1; do
   echo "    Chain not ready, waiting..."
   sleep 10
 done
@@ -35,7 +35,7 @@ echo "==> Chain is live"
 
 # Wait for finalization
 echo "==> Waiting for first finalization..."
-until curl -sf "http://${BEACON_IP}:3500/eth/v1/beacon/headers/finalized" > /dev/null 2>&1; do
+until curl -sf "http://${BEACON_IP}:3500/qrl/v1/beacon/headers/finalized" > /dev/null 2>&1; do
   echo "    Not finalized yet, waiting..."
   sleep 30
 done
@@ -51,9 +51,9 @@ START_TIME=$(date +%s)
 EPOCH=0
 
 while [ $EPOCH -lt $EPOCHS ]; do
-  HEADER=$(curl -sf "http://${BEACON_IP}:3500/eth/v1/beacon/headers/head" | jq -r '.data.header.message')
+  HEADER=$(curl -sf "http://${BEACON_IP}:3500/qrl/v1/beacon/headers/head" | jq -r '.data.header.message')
   SLOT=$(echo "$HEADER" | jq -r '.slot')
-  FINALIZED=$(curl -sf "http://${BEACON_IP}:3500/eth/v1/beacon/headers/finalized" | jq -r '.data.header.message.slot')
+  FINALIZED=$(curl -sf "http://${BEACON_IP}:3500/qrl/v1/beacon/headers/finalized" | jq -r '.data.header.message.slot')
 
   echo "    [$(date +%H:%M:%S)] Slot: ${SLOT} | Finalized: ${FINALIZED} | Epoch: $((SLOT / SLOTS_PER_EPOCH))"
   sleep "${SLOT_TIME}"

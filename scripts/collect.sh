@@ -26,12 +26,12 @@ fi
 # Get beacon API snapshot if available
 BEACON_IP=$(grep -A0 '\[beacon\]' "${ANSIBLE_DIR}/inventory/hosts.ini" | head -2 | tail -1 | awk '{print $1}')
 
-if curl -sf "http://${BEACON_IP}:3500/eth/v1/beacon/headers/head" > /dev/null 2>&1; then
+if curl -sf "http://${BEACON_IP}:3500/qrl/v1/beacon/headers/head" > /dev/null 2>&1; then
   echo "==> Capturing chain state snapshot..."
-  curl -sf "http://${BEACON_IP}:3500/eth/v1/beacon/headers/head" | jq . > "${OUTPUT_DIR}/head.json"
-  curl -sf "http://${BEACON_IP}:3500/eth/v1/beacon/headers/finalized" | jq . > "${OUTPUT_DIR}/finalized.json"
-  curl -sf "http://${BEACON_IP}:3500/eth/v1/node/peers" | jq . > "${OUTPUT_DIR}/peers.json"
-  curl -sf "http://${BEACON_IP}:3500/eth/v1/node/syncing" | jq . > "${OUTPUT_DIR}/syncing.json"
+  curl -sf "http://${BEACON_IP}:3500/qrl/v1/beacon/headers/head" | jq . > "${OUTPUT_DIR}/head.json"
+  curl -sf "http://${BEACON_IP}:3500/qrl/v1/beacon/headers/finalized" | jq . > "${OUTPUT_DIR}/finalized.json"
+  curl -sf "http://${BEACON_IP}:3500/qrl/v1/node/peers" | jq . > "${OUTPUT_DIR}/peers.json"
+  curl -sf "http://${BEACON_IP}:3500/qrl/v1/node/syncing" | jq . > "${OUTPUT_DIR}/syncing.json"
 fi
 
 # Create summary

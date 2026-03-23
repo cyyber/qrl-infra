@@ -10,7 +10,7 @@ Group=qrl
 ExecStart=/usr/local/bin/gqrl \
   --datadir {{ data_dir }}/execution \
   --http --http.addr 0.0.0.0 --http.port {{ gqrl_http_port }} \
-  --http.api qrl,net,web3,engine \
+  --http.api qrl,net,web3 \
   --authrpc.addr 0.0.0.0 --authrpc.port {{ gqrl_auth_port }} \
   --authrpc.jwtsecret {{ jwt_secret_path }} \
   --authrpc.vhosts=* \

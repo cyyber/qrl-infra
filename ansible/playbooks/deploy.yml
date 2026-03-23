@@ -45,16 +45,16 @@
 
     - name: Set beacon ENR fact
       set_fact:
-        beacon_enr: "{{ beacon_identity.json.data.enr }}"
+        beacon_enr: "{{ beacon_identity.json.data.qnr }}"
 
     - name: Get execution enode
       shell: |
         if [ "{{ deploy_mode }}" = "docker" ]; then
-          docker exec gqrl gqrl attach --exec admin.nodeInfo.enr /data/execution/gqrl.ipc 2>/dev/null || \
-          docker exec gqrl gqrl attach --exec admin.nodeInfo.enode /data/execution/gqrl.ipc
+          docker exec gqrl gqrl attach --exec admin.nodeInfo.qnr /data/execution/gqrl.ipc 2>/dev/null || \
+          docker exec gqrl gqrl attach --exec admin.nodeInfo.qnode /data/execution/gqrl.ipc
         else
-          gqrl attach --exec admin.nodeInfo.enr {{ data_dir }}/execution/gqrl.ipc 2>/dev/null || \
-          gqrl attach --exec admin.nodeInfo.enode {{ data_dir }}/execution/gqrl.ipc
+          gqrl attach --exec admin.nodeInfo.qnr {{ data_dir }}/execution/gqrl.ipc 2>/dev/null || \
+          gqrl attach --exec admin.nodeInfo.qnode {{ data_dir }}/execution/gqrl.ipc
         fi
       register: execution_enode
       become: true
