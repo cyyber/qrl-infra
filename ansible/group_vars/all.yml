@@ -3,7 +3,7 @@
 deploy_mode: "binary"  # "docker" or "binary"
 
 qrl_network: "stresstest"
-chain_id: 1
+chain_id: 1337
 
 data_dir: "/data"
 jwt_secret_path: "/data/jwt.hex"
