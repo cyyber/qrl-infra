@@ -24,7 +24,7 @@ variable "node_count" {
 variable "spammer_node_count" {
   description = "Number of transaction spammer nodes"
   type        = number
-  default     = 5
+  default     = 1
 }
 
 variable "node_instance_type" {
@@ -66,7 +66,7 @@ variable "vpc_cidr" {
 variable "deploy_mode" {
   description = "Deployment mode: docker or binary"
   type        = string
-  default     = "docker"
+  default     = "binary"
 
   validation {
     condition     = contains(["docker", "binary"], var.deploy_mode)

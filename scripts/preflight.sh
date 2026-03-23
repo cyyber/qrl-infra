@@ -57,6 +57,36 @@ if [ -f "$PEM_FILE" ]; then
 fi
 
 echo ""
+echo "==> Checking EC2 key pair..."
+# Try to get ssh_key_name from TF_VAR, terraform.tfvars, or *.auto.tfvars
+SSH_KEY_NAME="${TF_VAR_ssh_key_name:-}"
+if [ -z "$SSH_KEY_NAME" ]; then
+  for f in "${ROOT_DIR}"/terraform/terraform.tfvars "${ROOT_DIR}"/terraform/*.auto.tfvars; do
+    if [ -f "$f" ]; then
+      val=$(grep -E '^\s*ssh_key_name\s*=' "$f" 2>/dev/null | head -1 | sed 's/.*=\s*"\?\([^"]*\)"\?.*/\1/')
+      if [ -n "$val" ]; then
+        SSH_KEY_NAME="$val"
+        break
+      fi
+    fi
+  done
+fi
+
+if [ -n "$SSH_KEY_NAME" ]; then
+  AWS_REGION="${TF_VAR_aws_region:-$(grep -E '^\s*aws_region\s*=' "${ROOT_DIR}"/terraform/terraform.tfvars 2>/dev/null | head -1 | sed 's/.*=\s*"\?\([^"]*\)"\?.*/\1/' || true)}"
+  AWS_REGION="${AWS_REGION:-$(aws configure get region 2>/dev/null || echo "eu-north-1")}"
+  if aws ec2 describe-key-pairs --key-names "$SSH_KEY_NAME" --region "$AWS_REGION" &> /dev/null; then
+    echo "  OK: EC2 key pair '${SSH_KEY_NAME}' exists in ${AWS_REGION}"
+  else
+    echo "FAIL: EC2 key pair '${SSH_KEY_NAME}' not found in ${AWS_REGION}"
+    echo "      Create it with: aws ec2 create-key-pair --key-name ${SSH_KEY_NAME} --region ${AWS_REGION}"
+    ERRORS=$((ERRORS + 1))
+  fi
+else
+  echo "WARN: Could not determine ssh_key_name — set TF_VAR_ssh_key_name or add it to terraform/terraform.tfvars"
+fi
+
+echo ""
 echo "==> Checking genesis files..."
 check_file "${ROOT_DIR}/ansible/roles/common/files/genesis.json" "Run ./scripts/genesis.sh first"
 check_file "${ROOT_DIR}/ansible/roles/common/files/genesis.ssz" "Run ./scripts/genesis.sh first"

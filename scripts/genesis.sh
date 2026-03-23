@@ -7,7 +7,16 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT_DIR="$(dirname "$SCRIPT_DIR")"
+BUILD_DIR="${ROOT_DIR}/build"
 OUTPUT_DIR="${ROOT_DIR}/genesis-data"
+
+# Use local build/ binaries if available, fall back to PATH
+if [ -x "${BUILD_DIR}/staking-deposit-cli" ]; then
+  export PATH="${BUILD_DIR}:${PATH}"
+fi
+if [ -x "${BUILD_DIR}/qrysmctl" ]; then
+  export PATH="${BUILD_DIR}:${PATH}"
+fi
 NUM_VALIDATORS="${1:-2000}"
 NUM_NODES="${2:-20}"
 GENESIS_DELAY="${3:-600}"  # seconds from now

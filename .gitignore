@@ -16,6 +16,9 @@ jwt.hex
 **/keystore-password.txt
 **/wallet-password.txt
 
+# Build output
+build/
+
 # Genesis artifacts
 genesis-data/
 ansible/roles/common/files/genesis.json

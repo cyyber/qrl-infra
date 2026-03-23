@@ -44,22 +44,33 @@ Each node runs all three services on the same machine:
 - [Terraform](https://www.terraform.io/downloads) >= 1.5
 - [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/) >= 2.12
 - [AWS CLI](https://aws.amazon.com/cli/) configured with credentials
-- [qrysmctl](https://github.com/theQRL/qrysm) for genesis generation
+- [Go](https://go.dev/dl/) >= 1.21 (to build binaries from source)
+- [go-qrl](https://github.com/theQRL/go-qrl) and [qrysm](https://github.com/theQRL/qrysm) source repos as siblings (e.g. `../go-qrl`, `../qrysm`)
 - An EC2 key pair in your target AWS region
 
 ## Quick Start
 
-### 1. Generate genesis
+### 1. Build tools
 
 ```bash
-# 2000 validators, 10-minute delay before chain starts
-./scripts/genesis.sh 2000 600
+# Build staking-deposit-cli and qrysmctl (needed for genesis)
+make build-tools
 
-# Or with S3 upload
-S3_BUCKET=your-bucket ./scripts/genesis.sh 2000 600
+# Build all binaries including gqrl, beacon-chain, validator (needed for binary deploy mode)
+make build
 ```
 
-### 2. Create infrastructure
+### 2. Generate genesis
+
+```bash
+# 2000 validators, 2 nodes, 10-minute delay before chain starts
+./scripts/genesis.sh 2000 2 600
+
+# Or with S3 upload
+S3_BUCKET=your-bucket ./scripts/genesis.sh 2000 2 600
+```
+
+### 3. Create infrastructure
 
 ```bash
 cd terraform
@@ -69,13 +80,13 @@ terraform apply -var="ssh_key_name=your-key"
 
 This creates all EC2 instances and auto-generates the Ansible inventory at `ansible/inventory/hosts.ini`.
 
-### 3. Deploy services
+### 4. Deploy services
 
 ```bash
 make deploy
 ```
 
-### 4. Run stress test
+### 5. Run stress test
 
 ```bash
 # Monitor for 10 epochs
@@ -85,13 +96,13 @@ make stress-test
 ./scripts/stress.sh 5 60 128
 ```
 
-### 5. Collect results
+### 6. Collect results
 
 ```bash
 make collect
 ```
 
-### 6. Tear down
+### 7. Tear down
 
 ```bash
 make destroy
@@ -132,11 +143,10 @@ cd ansible && ansible-playbook playbooks/deploy.yml -e "deploy_mode=binary"
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `node_count` | 20 | Number of nodes (each runs execution + beacon + validator) |
-| `total_validators` | 2000 | Total validators (split across nodes) |
-| `spammer_node_count` | 5 | Transaction spammer nodes |
+| `node_count` | 2 | Number of nodes (each runs execution + beacon + validator) |
+| `spammer_node_count` | 1 | Transaction spammer nodes |
 | `node_instance_type` | m5.2xlarge | EC2 instance type for nodes |
-| `deploy_mode` | docker | `docker` or `binary` |
+| `deploy_mode` | binary | `docker` or `binary` |
 | `ebs_volume_size` | 100 | GB per data volume |
 
 ### Ansible variables (`ansible/group_vars/`)
@@ -154,7 +164,6 @@ Prometheus + Grafana are deployed to a dedicated monitoring instance.
 
 The pre-configured dashboard tracks:
 - Head slot & finality delay
-- Missed slots rate
 - Attestation counts
 - Peer counts (beacon + execution)
 - TX pool size & block gas used
@@ -183,8 +192,10 @@ qrl-infra/
 │   │   ├── spammer/        # tx-fuzz (docker.yml + binary.yml)
 │   │   └── monitoring/     # Prometheus + Grafana
 │   └── group_vars/         # Per-group configuration
+├── build/                     # Built binaries (git-ignored)
 ├── scripts/
 │   ├── genesis.sh          # Genesis generation + S3 upload
+│   ├── build-and-upload.sh # Build binaries + upload to S3
 │   ├── stress.sh           # Stress test orchestration
 │   └── collect.sh          # Log/metric collection
 └── monitoring/

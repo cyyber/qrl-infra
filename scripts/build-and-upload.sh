@@ -63,7 +63,7 @@ if [ -n "$QRYSM_DIR" ] && [ -d "$QRYSM_DIR" ]; then
   echo "    Built: ${BUILD_DIR}/qrysmctl"
 
   echo "==> Building staking-deposit-cli from ${QRYSM_DIR}..."
-  go build -o "${BUILD_DIR}/staking-deposit-cli" ./cmd/staking-deposit-cli/
+  go build -o "${BUILD_DIR}/staking-deposit-cli" ./cmd/staking-deposit-cli/deposit/
   echo "    Built: ${BUILD_DIR}/staking-deposit-cli"
 else
   echo "SKIP: qrysm not found at ${QRYSM_DIR:-../qrysm}"
