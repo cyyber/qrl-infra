@@ -143,6 +143,7 @@ done
 # Step 6: Copy files for Ansible distribution
 # -------------------------------------------------------
 ANSIBLE_FILES="${ROOT_DIR}/ansible/roles/common/files"
+[ -d "${ANSIBLE_FILES}" ] || mkdir -p "${ANSIBLE_FILES}"
 cp "${OUTPUT_DIR}/jwt.hex" "${ANSIBLE_FILES}/jwt.hex"
 cp "${OUTPUT_DIR}/genesis.json" "${ANSIBLE_FILES}/genesis.json"
 cp "${OUTPUT_DIR}/genesis.ssz" "${ANSIBLE_FILES}/genesis.ssz"
