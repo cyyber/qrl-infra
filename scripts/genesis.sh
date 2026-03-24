@@ -77,7 +77,23 @@ else
 fi
 
 # -------------------------------------------------------
-# Step 3: Generate genesis using deposit data
+# Step 3: Generate chain config
+# -------------------------------------------------------
+CHAIN_CONFIG="${OUTPUT_DIR}/config.yml"
+cat > "${CHAIN_CONFIG}" <<EOF
+# QRL testnet chain config
+# Must match staking-deposit-cli --chain-name testnet fork version
+PRESET_BASE: 'mainnet'
+CONFIG_NAME: 'testnet'
+GENESIS_FORK_VERSION: 0x20000089
+DEPOSIT_CHAIN_ID: 1337
+DEPOSIT_NETWORK_ID: 1337
+DEPOSIT_CONTRACT_ADDRESS: Q4242424242424242424242424242424242424242
+EOF
+echo "==> Generated chain config: ${CHAIN_CONFIG}"
+
+# -------------------------------------------------------
+# Step 4: Generate genesis using deposit data
 # -------------------------------------------------------
 DEPOSIT_FILE=$(ls "${OUTPUT_DIR}/validator_keys/deposit_data-"*.json | head -1)
 
@@ -85,6 +101,7 @@ echo "==> Generating genesis from deposit data: ${DEPOSIT_FILE}"
 
 qrysmctl testnet generate-genesis \
   --num-validators 0 \
+  --chain-config-file "${CHAIN_CONFIG}" \
   --deposit-json-file "${DEPOSIT_FILE}" \
   --genesis-time-delay "${GENESIS_DELAY}" \
   --output-ssz "${OUTPUT_DIR}/genesis.ssz" \
@@ -93,7 +110,7 @@ qrysmctl testnet generate-genesis \
 echo "==> Genesis files generated"
 
 # -------------------------------------------------------
-# Step 4: Split keystores across nodes
+# Step 5: Split keystores across nodes
 # -------------------------------------------------------
 echo "==> Splitting keystores across ${NUM_NODES} nodes..."
 
@@ -123,16 +140,17 @@ for (( node=0; node<NUM_NODES; node++ )); do
 done
 
 # -------------------------------------------------------
-# Step 5: Copy files for Ansible distribution
+# Step 6: Copy files for Ansible distribution
 # -------------------------------------------------------
 ANSIBLE_FILES="${ROOT_DIR}/ansible/roles/common/files"
 cp "${OUTPUT_DIR}/jwt.hex" "${ANSIBLE_FILES}/jwt.hex"
 cp "${OUTPUT_DIR}/genesis.json" "${ANSIBLE_FILES}/genesis.json"
 cp "${OUTPUT_DIR}/genesis.ssz" "${ANSIBLE_FILES}/genesis.ssz"
-echo "==> Copied genesis files to ${ANSIBLE_FILES}/"
+cp "${OUTPUT_DIR}/config.yml" "${ANSIBLE_FILES}/config.yml"
+echo "==> Copied genesis + config files to ${ANSIBLE_FILES}/"
 
 # -------------------------------------------------------
-# Step 6: Upload to S3 if bucket name is provided
+# Step 7: Upload to S3 if bucket name is provided
 # -------------------------------------------------------
 S3_BUCKET="${S3_BUCKET:-}"
 if [ -n "${S3_BUCKET}" ]; then
