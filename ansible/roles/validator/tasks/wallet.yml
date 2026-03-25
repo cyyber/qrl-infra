@@ -41,7 +41,7 @@
 
 - name: Create validator wallet
   command: >
-    validator wallet create
+    /usr/local/bin/validator wallet create
     --wallet-dir {{ wallet_dir }}
     --keymanager-kind imported
     --wallet-password-file {{ wallet_password_file }}
@@ -52,7 +52,7 @@
 
 - name: Import keystores into wallet
   command: >
-    validator accounts import
+    /usr/local/bin/validator accounts import
     --wallet-dir {{ wallet_dir }}
     --keys-dir {{ data_dir }}/validator/keystores
     --wallet-password-file {{ wallet_password_file }}
