@@ -50,7 +50,21 @@ Each node runs all three services on the same machine:
 
 ## Quick Start
 
-### 1. Build tools
+### One command setup
+
+```bash
+# Build, genesis, infra, upload, deploy — all in one
+SSH_KEY_NAME=your-key ./scripts/setup.sh 128 2 600
+#                                        ^^^  ^  ^^^
+#                                   validators nodes delay(s)
+
+# Restart network with same keys (skips key generation)
+SSH_KEY_NAME=your-key ./scripts/setup.sh --reuse-keys 128 2 600
+```
+
+### Step by step
+
+#### 1. Build tools
 
 ```bash
 # Build staking-deposit-cli and qrysmctl (needed for genesis)
@@ -60,7 +74,7 @@ make build-tools
 make build
 ```
 
-### 2. Generate genesis
+#### 2. Generate genesis
 
 ```bash
 # 2000 validators, 2 nodes, 10-minute delay before chain starts
@@ -73,7 +87,7 @@ make build
 S3_BUCKET=your-bucket ./scripts/genesis.sh 2000 2 600
 ```
 
-### 3. Create infrastructure
+#### 3. Create infrastructure
 
 ```bash
 cd terraform
@@ -83,13 +97,19 @@ terraform apply -var="ssh_key_name=your-key"
 
 This creates all EC2 instances and auto-generates the Ansible inventory at `ansible/inventory/hosts.ini`.
 
-### 4. Deploy services
+#### 4. Upload binaries to S3
+
+```bash
+./scripts/build-and-upload.sh
+```
+
+#### 5. Deploy services
 
 ```bash
 make deploy
 ```
 
-### 5. Run stress test
+### 6. Run stress test
 
 ```bash
 # Monitor for 10 epochs
@@ -99,13 +119,13 @@ make stress-test
 ./scripts/stress.sh 5 60 128
 ```
 
-### 6. Collect results
+### 7. Collect results
 
 ```bash
 make collect
 ```
 
-### 7. Tear down
+### 8. Tear down
 
 ```bash
 make destroy
