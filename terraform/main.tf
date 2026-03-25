@@ -84,7 +84,7 @@ resource "aws_s3_bucket_versioning" "artifacts" {
 # IAM role for EC2 instances to read S3
 # -------------------------------------------------------
 resource "aws_iam_role" "node" {
-  name = "qrl-${var.environment}-node-role"
+  name = "qrl-${var.environment}-node-role-${random_id.bucket_suffix.hex}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -101,7 +101,7 @@ resource "aws_iam_role" "node" {
 }
 
 resource "aws_iam_role_policy" "node_s3" {
-  name = "qrl-${var.environment}-s3-read"
+  name = "qrl-${var.environment}-s3-read-${random_id.bucket_suffix.hex}"
   role = aws_iam_role.node.id
 
   policy = jsonencode({
@@ -121,7 +121,7 @@ resource "aws_iam_role_policy" "node_s3" {
 }
 
 resource "aws_iam_instance_profile" "node" {
-  name = "qrl-${var.environment}-node-profile"
+  name = "qrl-${var.environment}-node-profile-${random_id.bucket_suffix.hex}"
   role = aws_iam_role.node.name
 }
 
