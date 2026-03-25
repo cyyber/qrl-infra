@@ -64,8 +64,9 @@ resource "aws_route_table_association" "main" {
 # S3 bucket for genesis artifacts and binaries
 # -------------------------------------------------------
 resource "aws_s3_bucket" "artifacts" {
-  bucket = "qrl-${var.environment}-artifacts-${random_id.bucket_suffix.hex}"
-  tags   = local.common_tags
+  bucket        = "qrl-${var.environment}-artifacts-${random_id.bucket_suffix.hex}"
+  force_destroy = true
+  tags          = local.common_tags
 }
 
 resource "random_id" "bucket_suffix" {
