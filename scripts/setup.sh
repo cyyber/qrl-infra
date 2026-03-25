@@ -8,11 +8,18 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 
+REUSE_KEYS="${REUSE_KEYS:-false}"
+while [[ "${1:-}" == --* ]]; do
+  case "$1" in
+    --reuse-keys) REUSE_KEYS=true; shift ;;
+    *) echo "Unknown option: $1"; exit 1 ;;
+  esac
+done
+
 NUM_VALIDATORS="${1:-128}"
 NUM_NODES="${2:-2}"
 GENESIS_DELAY="${3:-600}"
 SSH_KEY_NAME="${SSH_KEY_NAME:-${TF_VAR_ssh_key_name:-}}"
-REUSE_KEYS="${REUSE_KEYS:-false}"
 
 if [ -z "$SSH_KEY_NAME" ]; then
   echo "ERROR: SSH_KEY_NAME not set."
