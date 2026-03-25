@@ -64,21 +64,14 @@
       set_fact:
         exec_enode: "{{ execution_enode.stdout | trim | replace('\"', '') }}"
 
-- name: Build bootnode lists
-  hosts: localhost
+- name: Share bootnode lists with all nodes
+  hosts: node
   gather_facts: false
   tasks:
-    - name: Aggregate beacon bootnodes
+    - name: Set beacon bootnodes on all nodes
       set_fact:
-        beacon_bootnode_enrs: "{{ groups['node'][:3] | map('extract', hostvars, 'beacon_enr') | join(',') }}"
-        execution_bootnode_enodes: "{{ groups['node'][:3] | map('extract', hostvars, 'exec_enode') | join(',') }}"
-
-    - name: Share bootnode lists with all nodes
-      add_host:
-        name: "{{ item }}"
-        beacon_bootnodes: "{{ beacon_bootnode_enrs }}"
-        execution_bootnodes: "{{ execution_bootnode_enodes }}"
-      loop: "{{ groups['node'] }}"
+        beacon_bootnodes: "{{ groups['node'][:3] | map('extract', hostvars, 'beacon_enr') | join(',') }}"
+        execution_bootnodes: "{{ groups['node'][:3] | map('extract', hostvars, 'exec_enode') | join(',') }}"
 
 # --- Phase 2: Restart bootnodes with peer info + start remaining nodes ---
 
