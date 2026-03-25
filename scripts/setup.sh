@@ -20,6 +20,7 @@ NUM_VALIDATORS="${1:-128}"
 NUM_NODES="${2:-2}"
 GENESIS_DELAY="${3:-600}"
 SSH_KEY_NAME="${SSH_KEY_NAME:-${TF_VAR_ssh_key_name:-}}"
+export TF_VAR_ssh_key_name="${SSH_KEY_NAME}"
 
 if [ -z "$SSH_KEY_NAME" ]; then
   echo "ERROR: SSH_KEY_NAME not set."
