@@ -1,8 +1,11 @@
 ---
 - name: Download beacon-chain binary
-  get_url:
-    url: "{{ beacon_binary_url }}"
-    dest: /usr/local/bin/beacon-chain
+  command: aws s3 cp "{{ beacon_binary_url }}" /usr/local/bin/beacon-chain
+  when: beacon_binary_url != ""
+
+- name: Set beacon-chain binary permissions
+  file:
+    path: /usr/local/bin/beacon-chain
     mode: "0755"
   when: beacon_binary_url != ""
 

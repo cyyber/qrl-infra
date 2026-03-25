@@ -1,8 +1,11 @@
 ---
 - name: Download validator binary
-  get_url:
-    url: "{{ validator_binary_url }}"
-    dest: /usr/local/bin/validator
+  command: aws s3 cp "{{ validator_binary_url }}" /usr/local/bin/validator
+  when: validator_binary_url != ""
+
+- name: Set validator binary permissions
+  file:
+    path: /usr/local/bin/validator
     mode: "0755"
   when: validator_binary_url != ""
 

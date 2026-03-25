@@ -1,8 +1,11 @@
 ---
 - name: Download gqrl binary
-  get_url:
-    url: "{{ gqrl_binary_url }}"
-    dest: /usr/local/bin/gqrl
+  command: aws s3 cp "{{ gqrl_binary_url }}" /usr/local/bin/gqrl
+  when: gqrl_binary_url != ""
+
+- name: Set gqrl binary permissions
+  file:
+    path: /usr/local/bin/gqrl
     mode: "0755"
   when: gqrl_binary_url != ""
 

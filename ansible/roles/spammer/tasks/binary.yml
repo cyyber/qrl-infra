@@ -1,8 +1,11 @@
 ---
 - name: Download tx-fuzz binary
-  get_url:
-    url: "{{ spammer_binary_url }}"
-    dest: /usr/local/bin/tx-fuzz
+  command: aws s3 cp "{{ spammer_binary_url }}" /usr/local/bin/tx-fuzz
+  when: spammer_binary_url != ""
+
+- name: Set tx-fuzz binary permissions
+  file:
+    path: /usr/local/bin/tx-fuzz
     mode: "0755"
   when: spammer_binary_url != ""
 

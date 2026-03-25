@@ -97,10 +97,9 @@ done
 # -------------------------------------------------------
 # Update ansible group_vars with binary URLs
 # -------------------------------------------------------
-REGION=$(aws configure get region 2>/dev/null || echo "eu-north-1")
 ALL_YML="${ROOT_DIR}/ansible/group_vars/all.yml"
 
-BASE_URL="https://${S3_BUCKET}.s3.${REGION}.amazonaws.com/binaries"
+BASE_URL="s3://${S3_BUCKET}/binaries"
 
 sed -i "s|^gqrl_binary_url:.*|gqrl_binary_url: \"${BASE_URL}/gqrl\"|" "${ALL_YML}"
 sed -i "s|^beacon_binary_url:.*|beacon_binary_url: \"${BASE_URL}/beacon-chain\"|" "${ALL_YML}"
