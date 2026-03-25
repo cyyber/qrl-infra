@@ -114,6 +114,9 @@ echo "==> Genesis files generated"
 # -------------------------------------------------------
 echo "==> Splitting keystores across ${NUM_NODES} nodes..."
 
+# Clean up old node splits
+rm -rf "${OUTPUT_DIR}"/node-*/
+
 VALIDATORS_PER_NODE=$(( (NUM_VALIDATORS + NUM_NODES - 1) / NUM_NODES ))
 KEYSTORE_FILES=("${OUTPUT_DIR}/validator_keys/keystore-"*.json)
 TOTAL_KEYSTORES=${#KEYSTORE_FILES[@]}
