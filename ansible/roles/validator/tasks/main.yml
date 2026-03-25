@@ -1,4 +1,14 @@
 ---
+- name: Download validator binary
+  command: aws s3 cp "{{ validator_binary_url }}" /usr/local/bin/validator
+  when: deploy_mode == "binary" and validator_binary_url != ""
+
+- name: Set validator binary permissions
+  file:
+    path: /usr/local/bin/validator
+    mode: "0755"
+  when: deploy_mode == "binary" and validator_binary_url != ""
+
 - name: Set up validator wallet and import keys
   include_tasks: wallet.yml
 

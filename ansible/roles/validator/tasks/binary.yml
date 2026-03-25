@@ -1,14 +1,4 @@
 ---
-- name: Download validator binary
-  command: aws s3 cp "{{ validator_binary_url }}" /usr/local/bin/validator
-  when: validator_binary_url != ""
-
-- name: Set validator binary permissions
-  file:
-    path: /usr/local/bin/validator
-    mode: "0755"
-  when: validator_binary_url != ""
-
 - name: Deploy validator systemd service
   template:
     src: validator.service.j2
