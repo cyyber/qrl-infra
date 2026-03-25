@@ -1,4 +1,4 @@
-.PHONY: preflight genesis build-upload infra-plan infra-apply deploy update stress-test collect destroy build build-tools build-node
+.PHONY: preflight genesis build-upload infra-plan infra-apply deploy update stress-test collect destroy build build-tools build-node setup
 
 TERRAFORM_DIR = terraform
 ANSIBLE_DIR = ansible
@@ -42,6 +42,10 @@ $(BUILD_DIR)/validator:
 	@mkdir -p $(BUILD_DIR)
 	cd $(QRYSM_DIR) && go build -o $(CURDIR)/$(BUILD_DIR)/validator ./cmd/validator/
 	@echo "Built: $(BUILD_DIR)/validator"
+
+# Full setup: build, genesis, infra, upload, deploy (usage: make setup SSH_KEY_NAME=your-key VALIDATORS=128 NODES=2)
+setup:
+	SSH_KEY_NAME=$(SSH_KEY_NAME) REUSE_KEYS=$(REUSE_KEYS) $(SCRIPTS_DIR)/setup.sh $(VALIDATORS) $(NODES) $(DELAY)
 
 # Preflight checks
 preflight:
