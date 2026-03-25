@@ -24,7 +24,7 @@ if [ -d "${ROOT_DIR}/collected" ]; then
 fi
 
 # Get beacon API snapshot if available
-BEACON_IP=$(grep -A0 '\[beacon\]' "${ANSIBLE_DIR}/inventory/hosts.ini" | head -2 | tail -1 | awk '{print $1}')
+BEACON_IP=$(grep -A1 '\[node\]' "${ANSIBLE_DIR}/inventory/hosts.ini" | tail -1 | awk '{print $1}')
 
 if curl -sf "http://${BEACON_IP}:3500/qrl/v1/beacon/headers/head" > /dev/null 2>&1; then
   echo "==> Capturing chain state snapshot..."
@@ -42,10 +42,8 @@ Date: $(date)
 Directory: ${OUTPUT_DIR}
 
 Node counts:
-  Execution: $(grep -c 'role=execution' "${ANSIBLE_DIR}/inventory/hosts.ini" || echo 0)
-  Beacon:    $(grep -c 'role=beacon' "${ANSIBLE_DIR}/inventory/hosts.ini" || echo 0)
-  Validator: $(grep -c 'role=validator' "${ANSIBLE_DIR}/inventory/hosts.ini" || echo 0)
-  Spammer:   $(grep -c 'role=spammer' "${ANSIBLE_DIR}/inventory/hosts.ini" || echo 0)
+  Nodes (exec+beacon+validator): $(grep -c '^\[node\]' "${ANSIBLE_DIR}/inventory/hosts.ini" >/dev/null && grep -A999 '^\[node\]' "${ANSIBLE_DIR}/inventory/hosts.ini" | tail -n+2 | grep -c '^[0-9]' || echo 0)
+  Spammer:   $(grep -A999 '^\[spammer\]' "${ANSIBLE_DIR}/inventory/hosts.ini" | tail -n+2 | grep -c '^[0-9]' || echo 0)
 SUMMARY
 
 echo "==> Collection complete: ${OUTPUT_DIR}/"

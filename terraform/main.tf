@@ -200,6 +200,14 @@ resource "aws_security_group" "node" {
     cidr_blocks = [var.vpc_cidr]
   }
 
+  # Validator Monitoring (VPC only)
+  ingress {
+    from_port   = 8081
+    to_port     = 8081
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
+  }
+
   # SSH
   ingress {
     from_port   = 22

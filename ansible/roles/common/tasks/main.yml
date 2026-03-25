@@ -42,6 +42,7 @@
     owner: qrl
     group: qrl
     mode: "0600"
+  when: "'node' in group_names"
 
 - name: Distribute genesis.json
   copy:
@@ -50,7 +51,7 @@
     owner: qrl
     group: qrl
     mode: "0644"
-  ignore_errors: true
+  when: "'node' in group_names"
 
 - name: Distribute genesis.ssz
   copy:
@@ -59,7 +60,7 @@
     owner: qrl
     group: qrl
     mode: "0644"
-  ignore_errors: true
+  when: "'node' in group_names"
 
 - name: Distribute chain config
   copy:
@@ -68,7 +69,7 @@
     owner: qrl
     group: qrl
     mode: "0644"
-  ignore_errors: true
+  when: "'node' in group_names"
 
 - name: Configure log rotation
   copy:

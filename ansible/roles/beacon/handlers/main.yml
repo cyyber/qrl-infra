@@ -1,12 +1,13 @@
 ---
-- name: restart beacon-chain
+- name: restart beacon-chain (binary)
   systemd:
     name: beacon-chain
     state: restarted
     daemon_reload: true
   when: deploy_mode == "binary"
+  listen: restart beacon-chain
 
-- name: restart beacon-chain
+- name: restart beacon-chain (docker)
   docker_container:
     name: beacon-chain
     state: started

@@ -39,7 +39,7 @@
     path: "{{ wallet_dir }}"
   register: wallet_stat
 
-- name: Create validator wallet
+- name: Create validator wallet (binary)
   command: >
     /usr/local/bin/validator wallet create
     --wallet-dir {{ wallet_dir }}
@@ -48,9 +48,9 @@
     --accept-terms-of-use
   become: true
   become_user: qrl
-  when: not wallet_stat.stat.exists
+  when: not wallet_stat.stat.exists and deploy_mode == "binary"
 
-- name: Import keystores into wallet
+- name: Import keystores into wallet (binary)
   command: >
     /usr/local/bin/validator accounts import
     --wallet-dir {{ wallet_dir }}
@@ -60,4 +60,29 @@
     --accept-terms-of-use
   become: true
   become_user: qrl
-  when: not wallet_stat.stat.exists
+  when: not wallet_stat.stat.exists and deploy_mode == "binary"
+
+- name: Create validator wallet (docker)
+  command: >
+    docker run --rm
+    -v {{ data_dir }}:{{ data_dir }}
+    {{ validator_docker_image }}
+    wallet create
+    --wallet-dir {{ wallet_dir }}
+    --keymanager-kind imported
+    --wallet-password-file {{ wallet_password_file }}
+    --accept-terms-of-use
+  when: not wallet_stat.stat.exists and deploy_mode == "docker"
+
+- name: Import keystores into wallet (docker)
+  command: >
+    docker run --rm
+    -v {{ data_dir }}:{{ data_dir }}
+    {{ validator_docker_image }}
+    accounts import
+    --wallet-dir {{ wallet_dir }}
+    --keys-dir {{ data_dir }}/validator/keystores
+    --wallet-password-file {{ wallet_password_file }}
+    --account-password-file {{ keystore_password_file }}
+    --accept-terms-of-use
+  when: not wallet_stat.stat.exists and deploy_mode == "docker"

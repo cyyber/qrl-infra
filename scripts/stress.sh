@@ -16,7 +16,7 @@ EPOCH_DURATION=$((SLOT_TIME * SLOTS_PER_EPOCH))
 TOTAL_DURATION=$((EPOCH_DURATION * EPOCHS))
 
 # Get first beacon node IP from inventory
-BEACON_IP=$(grep -A0 '\[beacon\]' "${ANSIBLE_DIR}/inventory/hosts.ini" | head -2 | tail -1 | awk '{print $1}')
+BEACON_IP=$(grep -A1 '\[node\]' "${ANSIBLE_DIR}/inventory/hosts.ini" | tail -1 | awk '{print $1}')
 
 echo "==> Stress test configuration:"
 echo "    Epochs: ${EPOCHS}"

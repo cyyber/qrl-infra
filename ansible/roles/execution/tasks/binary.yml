@@ -14,6 +14,16 @@
     path: "{{ data_dir }}/execution/gqrl/chaindata"
   register: gqrl_chaindata
 
+- name: Check gqrl binary exists
+  stat:
+    path: /usr/local/bin/gqrl
+  register: gqrl_binary
+
+- name: Fail if gqrl binary is missing
+  fail:
+    msg: "gqrl binary not found at /usr/local/bin/gqrl. Set gqrl_binary_url in group_vars/all.yml and run build-and-upload.sh."
+  when: not gqrl_binary.stat.exists
+
 - name: Initialize gqrl with genesis
   command: >
     /usr/local/bin/gqrl init

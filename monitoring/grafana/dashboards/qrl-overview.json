@@ -17,23 +17,23 @@
         ]
       },
       {
-        "title": "Finalized Slot",
+        "title": "Finalized Epoch",
         "type": "stat",
         "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
         "targets": [
           {
-            "expr": "max(beacon_finalized_slot)",
-            "legendFormat": "Finalized Slot"
+            "expr": "max(beacon_finalized_epoch)",
+            "legendFormat": "Finalized Epoch"
           }
         ]
       },
       {
-        "title": "Finality Delay (slots)",
+        "title": "Finality Delay (epochs)",
         "type": "stat",
         "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
         "targets": [
           {
-            "expr": "max(beacon_head_slot) - max(beacon_finalized_slot)",
+            "expr": "max(beacon_head_slot) / 128 - max(beacon_finalized_epoch)",
             "legendFormat": "Delay"
           }
         ]
@@ -61,12 +61,12 @@
         ]
       },
       {
-        "title": "Missed Slots Rate",
+        "title": "P2P Peer Count per Node",
         "type": "timeseries",
         "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
         "targets": [
           {
-            "expr": "rate(beacon_missed_slot_count[5m])",
+            "expr": "p2p_peer_count{state=\"Connected\",job=\"beacon\"}",
             "legendFormat": "{{ instance }}"
           }
         ]

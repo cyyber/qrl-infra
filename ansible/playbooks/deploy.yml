@@ -53,8 +53,8 @@
           docker exec gqrl gqrl attach --exec admin.nodeInfo.qnr /data/execution/gqrl.ipc 2>/dev/null || \
           docker exec gqrl gqrl attach --exec admin.nodeInfo.qnode /data/execution/gqrl.ipc
         else
-          gqrl attach --exec admin.nodeInfo.qnr {{ data_dir }}/execution/gqrl.ipc 2>/dev/null || \
-          gqrl attach --exec admin.nodeInfo.qnode {{ data_dir }}/execution/gqrl.ipc
+          /usr/local/bin/gqrl attach --exec admin.nodeInfo.qnr {{ data_dir }}/execution/gqrl.ipc 2>/dev/null || \
+          /usr/local/bin/gqrl attach --exec admin.nodeInfo.qnode {{ data_dir }}/execution/gqrl.ipc
         fi
       register: execution_enode
       become: true
