@@ -42,8 +42,8 @@ Date: $(date)
 Directory: ${OUTPUT_DIR}
 
 Node counts:
-  Nodes (exec+beacon+validator): $(grep -c '^\[node\]' "${ANSIBLE_DIR}/inventory/hosts.ini" >/dev/null && grep -A999 '^\[node\]' "${ANSIBLE_DIR}/inventory/hosts.ini" | tail -n+2 | grep -c '^[0-9]' || echo 0)
-  Spammer:   $(grep -A999 '^\[spammer\]' "${ANSIBLE_DIR}/inventory/hosts.ini" | tail -n+2 | grep -c '^[0-9]' || echo 0)
+  Nodes (exec+beacon+validator): $(sed -n '/^\[node\]/,/^\[/p' "${ANSIBLE_DIR}/inventory/hosts.ini" | grep -c '^[0-9]' || echo 0)
+  Spammer:   $(sed -n '/^\[spammer\]/,/^\[/p' "${ANSIBLE_DIR}/inventory/hosts.ini" | grep -c '^[0-9]' || echo 0)
 SUMMARY
 
 echo "==> Collection complete: ${OUTPUT_DIR}/"

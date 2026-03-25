@@ -80,7 +80,17 @@
         execution_bootnodes: "{{ execution_bootnode_enodes }}"
       loop: "{{ groups['node'] }}"
 
-# --- Phase 2: Start remaining nodes with bootnode info ---
+# --- Phase 2: Restart bootnodes with peer info + start remaining nodes ---
+
+- name: Redeploy execution on bootnodes with peer info
+  hosts: node[0:2]
+  roles:
+    - execution
+
+- name: Redeploy beacon on bootnodes with peer info
+  hosts: node[0:2]
+  roles:
+    - beacon
 
 - name: Deploy execution on remaining nodes
   hosts: node[3:]

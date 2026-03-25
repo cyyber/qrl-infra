@@ -18,7 +18,7 @@ groups:
           summary: "Finality delay exceeds 2 epochs on {{ $labels.instance }}"
 
       - alert: LowPeerCount
-        expr: p2p_peer_count < 3
+        expr: p2p_peer_count{state="Connected"} < 3
         for: 5m
         labels:
           severity: warning
