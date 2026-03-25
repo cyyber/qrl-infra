@@ -95,13 +95,21 @@ for binary in gqrl beacon-chain validator qrysmctl staking-deposit-cli tx-fuzz; 
 done
 
 # -------------------------------------------------------
-# Print URLs for ansible group_vars
+# Update ansible group_vars with binary URLs
 # -------------------------------------------------------
 REGION=$(aws configure get region 2>/dev/null || echo "eu-north-1")
+ALL_YML="${ROOT_DIR}/ansible/group_vars/all.yml"
+
+BASE_URL="https://${S3_BUCKET}.s3.${REGION}.amazonaws.com/binaries"
+
+sed -i "s|^gqrl_binary_url:.*|gqrl_binary_url: \"${BASE_URL}/gqrl\"|" "${ALL_YML}"
+sed -i "s|^beacon_binary_url:.*|beacon_binary_url: \"${BASE_URL}/beacon-chain\"|" "${ALL_YML}"
+sed -i "s|^validator_binary_url:.*|validator_binary_url: \"${BASE_URL}/validator\"|" "${ALL_YML}"
+sed -i "s|^spammer_binary_url:.*|spammer_binary_url: \"${BASE_URL}/tx-fuzz\"|" "${ALL_YML}"
+
 echo ""
-echo "==> Done! Add these to ansible/group_vars/all.yml:"
-echo ""
-echo "gqrl_binary_url: \"https://${S3_BUCKET}.s3.${REGION}.amazonaws.com/binaries/gqrl\""
-echo "beacon_binary_url: \"https://${S3_BUCKET}.s3.${REGION}.amazonaws.com/binaries/beacon-chain\""
-echo "validator_binary_url: \"https://${S3_BUCKET}.s3.${REGION}.amazonaws.com/binaries/validator\""
-echo "spammer_binary_url: \"https://${S3_BUCKET}.s3.${REGION}.amazonaws.com/binaries/tx-fuzz\""
+echo "==> Updated ${ALL_YML} with binary URLs:"
+echo "    ${BASE_URL}/gqrl"
+echo "    ${BASE_URL}/beacon-chain"
+echo "    ${BASE_URL}/validator"
+echo "    ${BASE_URL}/tx-fuzz"
