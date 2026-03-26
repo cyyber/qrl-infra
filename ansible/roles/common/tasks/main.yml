@@ -1,7 +1,11 @@
 ---
 - name: Wait for apt lock to be released
-  shell: while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 5; done
+  shell: while lsof /var/lib/dpkg/lock-frontend >/dev/null 2>&1 || lsof /var/lib/apt/lists/lock >/dev/null 2>&1; do sleep 5; done
   changed_when: false
+  retries: 30
+  delay: 10
+  register: apt_lock
+  until: apt_lock.rc == 0
 
 - name: Install base packages
   apt:
@@ -13,6 +17,10 @@
       - awscli
     state: present
     update_cache: true
+  retries: 5
+  delay: 30
+  register: apt_install
+  until: apt_install is success
 
 - name: Create qrl user
   user:
