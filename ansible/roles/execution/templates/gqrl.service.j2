@@ -15,6 +15,7 @@ ExecStart=/usr/local/bin/gqrl \
   --authrpc.jwtsecret {{ jwt_secret_path }} \
   --authrpc.vhosts=* \
   --port {{ gqrl_p2p_port }} \
+  --nat extip:{{ public_ip }} \
   --metrics --metrics.addr 0.0.0.0 --metrics.port {{ gqrl_metrics_port }} \
   --networkid {{ chain_id }} \
 {% if execution_bootnodes != "" %}

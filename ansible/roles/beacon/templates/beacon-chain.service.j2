@@ -14,6 +14,7 @@ ExecStart=/usr/local/bin/beacon-chain \
   --jwt-secret {{ jwt_secret_path }} \
   --genesis-state {{ genesis_ssz_path }} \
   --chain-config-file {{ chain_config_path }} \
+  --p2p-host-ip {{ public_ip }} \
   --p2p-tcp-port {{ beacon_p2p_tcp_port }} \
   --p2p-udp-port {{ beacon_p2p_udp_port }} \
   --rpc-host 0.0.0.0 --rpc-port {{ beacon_grpc_port }} \
