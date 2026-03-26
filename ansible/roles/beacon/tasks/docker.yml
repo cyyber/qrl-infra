@@ -27,6 +27,7 @@
       --monitoring-host 0.0.0.0 --monitoring-port {{ beacon_monitoring_port }}
       --min-sync-peers {{ min_sync_peers }}
       --accept-terms-of-use
+      --p2p-static-id
       {% if beacon_bootnodes != "" %}--bootstrap-node {{ beacon_bootnodes }}{% endif %}
       {{ beacon_extra_flags }}
     log_driver: json-file
