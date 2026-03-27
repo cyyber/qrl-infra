@@ -21,7 +21,7 @@ wallet_password: "walletpassword123"
 gqrl_docker_image: "theqrl/go-qrl:latest"
 beacon_docker_image: "theqrl/qrysm-beacon-chain:latest"
 validator_docker_image: "theqrl/qrysm-validator:latest"
-spammer_docker_image: "theqrl/tx-fuzz:latest"
+spammer_docker_image: "theqrl/qrl-tx-spammer:latest"
 
 # Binary URLs (used when deploy_mode=binary)
 gqrl_binary_url: ""

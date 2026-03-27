@@ -1,16 +1,16 @@
 ---
-- name: restart tx-fuzz (binary)
+- name: restart tx-spammer (binary)
   systemd:
-    name: tx-fuzz
+    name: tx-spammer
     state: restarted
     daemon_reload: true
   when: deploy_mode == "binary"
-  listen: restart tx-fuzz
+  listen: restart tx-spammer
 
-- name: restart tx-fuzz (docker)
+- name: restart tx-spammer (docker)
   docker_container:
-    name: tx-fuzz
+    name: tx-spammer
     state: started
     restart: true
   when: deploy_mode == "docker"
-  listen: restart tx-fuzz
+  listen: restart tx-spammer

@@ -1,5 +1,5 @@
 [Unit]
-Description=QRL Transaction Spammer (tx-fuzz)
+Description=QRL Transaction Spammer (qrl-tx-spammer)
 After=network-online.target
 Wants=network-online.target
 
@@ -7,7 +7,7 @@ Wants=network-online.target
 Type=simple
 User=qrl
 Group=qrl
-ExecStart=/usr/local/bin/tx-fuzz spam \
+ExecStart=/usr/local/bin/tx-spammer spam \
   --rpc http://{{ target_execution_ip }}:{{ gqrl_http_port | default(8545) }} \
   --seed {{ spammer_seed }} \
   --txcount {{ spammer_tx_count }} \
@@ -15,8 +15,8 @@ ExecStart=/usr/local/bin/tx-fuzz spam \
   {{ spammer_extra_flags | default('') }}
 Restart=always
 RestartSec=5
-StandardOutput=append:{{ data_dir }}/logs/tx-fuzz.log
-StandardError=append:{{ data_dir }}/logs/tx-fuzz.log
+StandardOutput=append:{{ data_dir }}/logs/tx-spammer.log
+StandardError=append:{{ data_dir }}/logs/tx-spammer.log
 
 [Install]
 WantedBy=multi-user.target

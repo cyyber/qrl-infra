@@ -28,7 +28,7 @@ Each node runs all three services on the same machine:
 
 ┌─────────────┐              ┌─────────────┐
 │  TX Spammer  │              │  Monitoring  │
-│  (tx-fuzz)   │              │  Prometheus  │
+│(tx-spammer)  │              │  Prometheus  │
 │  x 5-10      │              │  + Grafana   │
 └─────────────┘              └─────────────┘
 ```
@@ -212,7 +212,7 @@ qrl-infra/
 │   │   ├── execution/      # go-qrl (docker.yml + binary.yml)
 │   │   ├── beacon/         # qrysm beacon (docker.yml + binary.yml)
 │   │   ├── validator/      # qrysm validator (docker.yml + binary.yml)
-│   │   ├── spammer/        # tx-fuzz (docker.yml + binary.yml)
+│   │   ├── spammer/        # qrl-tx-spammer (docker.yml + binary.yml)
 │   │   └── monitoring/     # Prometheus + Grafana
 │   └── group_vars/         # Per-group configuration
 ├── build/                     # Built binaries (git-ignored)

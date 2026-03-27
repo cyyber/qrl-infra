@@ -31,7 +31,7 @@
         if [ "{{ deploy_mode }}" = "docker" ]; then
           docker ps --format '{{ '{{' }}.Names{{ '}}' }}\t{{ '{{' }}.Status{{ '}}' }}'
         else
-          systemctl status gqrl beacon-chain validator tx-fuzz 2>/dev/null || true
+          systemctl status gqrl beacon-chain validator tx-spammer 2>/dev/null || true
         fi
       register: service_status
 

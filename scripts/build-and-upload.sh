@@ -12,7 +12,7 @@ BUILD_DIR="${ROOT_DIR}/build"
 # Source repos (adjust paths if needed)
 GO_QRL_DIR="${GO_QRL_DIR:-$(cd "${ROOT_DIR}/../go-qrl" 2>/dev/null && pwd || echo "")}"
 QRYSM_DIR="${QRYSM_DIR:-$(cd "${ROOT_DIR}/../qrysm" 2>/dev/null && pwd || echo "")}"
-TX_FUZZ_DIR="${TX_FUZZ_DIR:-$(cd "${ROOT_DIR}/../tx-fuzz" 2>/dev/null && pwd || echo "")}"
+TX_SPAMMER_DIR="${TX_SPAMMER_DIR:-$(cd "${ROOT_DIR}/../qrl-tx-spammer" 2>/dev/null && pwd || echo "")}"
 
 # S3 bucket from Terraform output
 S3_BUCKET="${S3_BUCKET:-$(cd "${ROOT_DIR}/terraform" && terraform output -raw s3_bucket 2>/dev/null || echo "")}"
@@ -70,15 +70,15 @@ else
 fi
 
 # -------------------------------------------------------
-# Build tx-fuzz
+# Build qrl-tx-spammer
 # -------------------------------------------------------
-if [ -n "$TX_FUZZ_DIR" ] && [ -d "$TX_FUZZ_DIR" ]; then
-  echo "==> Building tx-fuzz from ${TX_FUZZ_DIR}..."
-  cd "$TX_FUZZ_DIR"
-  go build -o "${BUILD_DIR}/tx-fuzz" .
-  echo "    Built: ${BUILD_DIR}/tx-fuzz"
+if [ -n "$TX_SPAMMER_DIR" ] && [ -d "$TX_SPAMMER_DIR" ]; then
+  echo "==> Building tx-spammer from ${TX_SPAMMER_DIR}..."
+  cd "$TX_SPAMMER_DIR"
+  go build -o "${BUILD_DIR}/tx-spammer" ./cmd/tx-spammer/
+  echo "    Built: ${BUILD_DIR}/tx-spammer"
 else
-  echo "SKIP: tx-fuzz not found at ${TX_FUZZ_DIR:-../tx-fuzz}"
+  echo "SKIP: qrl-tx-spammer not found at ${TX_SPAMMER_DIR:-../qrl-tx-spammer}"
 fi
 
 # -------------------------------------------------------
@@ -87,7 +87,7 @@ fi
 echo ""
 echo "==> Uploading binaries to s3://${S3_BUCKET}/binaries/"
 
-for binary in gqrl beacon-chain validator qrysmctl staking-deposit-cli tx-fuzz; do
+for binary in gqrl beacon-chain validator qrysmctl staking-deposit-cli tx-spammer; do
   if [ -f "${BUILD_DIR}/${binary}" ]; then
     aws s3 cp "${BUILD_DIR}/${binary}" "s3://${S3_BUCKET}/binaries/${binary}"
     echo "    Uploaded: ${binary}"
@@ -104,11 +104,11 @@ BASE_URL="s3://${S3_BUCKET}/binaries"
 sed -i "s|^gqrl_binary_url:.*|gqrl_binary_url: \"${BASE_URL}/gqrl\"|" "${ALL_YML}"
 sed -i "s|^beacon_binary_url:.*|beacon_binary_url: \"${BASE_URL}/beacon-chain\"|" "${ALL_YML}"
 sed -i "s|^validator_binary_url:.*|validator_binary_url: \"${BASE_URL}/validator\"|" "${ALL_YML}"
-sed -i "s|^spammer_binary_url:.*|spammer_binary_url: \"${BASE_URL}/tx-fuzz\"|" "${ALL_YML}"
+sed -i "s|^spammer_binary_url:.*|spammer_binary_url: \"${BASE_URL}/tx-spammer\"|" "${ALL_YML}"
 
 echo ""
 echo "==> Updated ${ALL_YML} with binary URLs:"
 echo "    ${BASE_URL}/gqrl"
 echo "    ${BASE_URL}/beacon-chain"
 echo "    ${BASE_URL}/validator"
-echo "    ${BASE_URL}/tx-fuzz"
+echo "    ${BASE_URL}/tx-spammer"

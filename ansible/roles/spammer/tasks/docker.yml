@@ -1,13 +1,13 @@
 ---
-- name: Pull tx-fuzz Docker image
+- name: Pull tx-spammer Docker image
   docker_image:
     name: "{{ spammer_docker_image }}"
     source: pull
     force_source: true
 
-- name: Run tx-fuzz container
+- name: Run tx-spammer container
   docker_container:
-    name: tx-fuzz
+    name: tx-spammer
     image: "{{ spammer_docker_image }}"
     state: started
     restart_policy: unless-stopped
