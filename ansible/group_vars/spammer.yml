@@ -7,5 +7,10 @@ spammer_refill_amount: 5
 spammer_refill_balance: 2
 spammer_refill_interval: 300
 
+# Scenario flags (eoatx)
+# Set one or both: total count of txs, or txs per slot
+spammer_tx_count: 0
+spammer_throughput: 100
+
 # Extra flags to pass to tx-spammer
 spammer_extra_flags: ""

@@ -9,13 +9,21 @@ User=qrl
 Group=qrl
 ExecStart=/usr/local/bin/tx-spammer {{ spammer_scenario }} \
   --rpchost http://{{ target_execution_ip }}:{{ gqrl_http_port | default(8545) }} \
+{% if spammer_wallet_seed != '' %}
   --wallet-seed {{ spammer_wallet_seed }} \
+{% endif %}
 {% if spammer_child_wallet_seed != '' %}
   --child-wallet-seed {{ spammer_child_wallet_seed }} \
 {% endif %}
   --refill-amount {{ spammer_refill_amount }} \
   --refill-balance {{ spammer_refill_balance }} \
   --refill-interval {{ spammer_refill_interval }} \
+{% if spammer_tx_count > 0 %}
+  --count {{ spammer_tx_count }} \
+{% endif %}
+{% if spammer_throughput > 0 %}
+  --throughput {{ spammer_throughput }} \
+{% endif %}
   {{ spammer_extra_flags | default('') }}
 Restart=always
 RestartSec=5
