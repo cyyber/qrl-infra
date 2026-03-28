@@ -1,7 +1,8 @@
 # Spammer (qrl-tx-spammer) variables
 
 spammer_scenario: "eoatx"
-spammer_wallet_seed: ""
+# Pre-funded genesis account seed (Qaf84bc06703edfc371a0177ac8b482622d5ad242)
+spammer_wallet_seed: "010000251a3ae8521cf46769e5c84fabe052ef79214822e92f2b0d9dec35f2f3b51ed12f86b6b4e8b64f6677f52019ec560fd5"
 spammer_child_wallet_seed: ""
 spammer_refill_amount: 5
 spammer_refill_balance: 2
