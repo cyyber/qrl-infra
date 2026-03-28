@@ -1,8 +1,11 @@
 # Spammer (qrl-tx-spammer) variables
 
-spammer_seed: 0
-spammer_tx_count: 100
-spammer_accounts: 10
+spammer_scenario: "eoatx"
+spammer_wallet_seed: ""
+spammer_child_wallet_seed: ""
+spammer_refill_amount: 5
+spammer_refill_balance: 2
+spammer_refill_interval: 300
 
 # Extra flags to pass to tx-spammer
 spammer_extra_flags: ""

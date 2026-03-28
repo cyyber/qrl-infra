@@ -13,11 +13,13 @@
     restart_policy: unless-stopped
     network_mode: host
     command: >
-      spam
-      --rpc http://{{ target_execution_ip }}:{{ gqrl_http_port | default(8545) }}
-      --seed {{ spammer_seed }}
-      --txcount {{ spammer_tx_count }}
-      --accounts {{ spammer_accounts }}
+      {{ spammer_scenario }}
+      --rpchost http://{{ target_execution_ip }}:{{ gqrl_http_port | default(8545) }}
+      --wallet-seed {{ spammer_wallet_seed }}
+      {% if spammer_child_wallet_seed != '' %}--child-wallet-seed {{ spammer_child_wallet_seed }}{% endif %}
+      --refill-amount {{ spammer_refill_amount }}
+      --refill-balance {{ spammer_refill_balance }}
+      --refill-interval {{ spammer_refill_interval }}
       {{ spammer_extra_flags }}
     log_driver: json-file
     log_options:

@@ -7,11 +7,15 @@ Wants=network-online.target
 Type=simple
 User=qrl
 Group=qrl
-ExecStart=/usr/local/bin/tx-spammer spam \
-  --rpc http://{{ target_execution_ip }}:{{ gqrl_http_port | default(8545) }} \
-  --seed {{ spammer_seed }} \
-  --txcount {{ spammer_tx_count }} \
-  --accounts {{ spammer_accounts }} \
+ExecStart=/usr/local/bin/tx-spammer {{ spammer_scenario }} \
+  --rpchost http://{{ target_execution_ip }}:{{ gqrl_http_port | default(8545) }} \
+  --wallet-seed {{ spammer_wallet_seed }} \
+{% if spammer_child_wallet_seed != '' %}
+  --child-wallet-seed {{ spammer_child_wallet_seed }} \
+{% endif %}
+  --refill-amount {{ spammer_refill_amount }} \
+  --refill-balance {{ spammer_refill_balance }} \
+  --refill-interval {{ spammer_refill_interval }} \
   {{ spammer_extra_flags | default('') }}
 Restart=always
 RestartSec=5
