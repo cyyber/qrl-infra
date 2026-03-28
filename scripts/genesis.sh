@@ -71,7 +71,8 @@ else
     --folder "${OUTPUT_DIR}/validator_keys" \
     --chain-name testnet \
     --execution-address "${EXECUTION_ADDRESS}" \
-    --keystore-password-file "${OUTPUT_DIR}/keystore-password.txt"
+    --keystore-password-file "${OUTPUT_DIR}/keystore-password.txt" \
+    --lightkdf
 
   echo "==> Generated ${NUM_VALIDATORS} validator keystores"
 fi
