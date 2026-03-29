@@ -63,6 +63,9 @@ if [ "$REUSE_KEYS" = true ]; then
 else
   echo "==> Generating ${NUM_VALIDATORS} validator keys..."
 
+  # Clean up old keys and deposit data
+  rm -rf "${OUTPUT_DIR}/validator_keys"
+
   # Write keystore password to file
   echo -n "${KEYSTORE_PASSWORD}" > "${OUTPUT_DIR}/keystore-password.txt"
 
@@ -96,7 +99,7 @@ echo "==> Generated chain config: ${CHAIN_CONFIG}"
 # -------------------------------------------------------
 # Step 4: Generate genesis using deposit data
 # -------------------------------------------------------
-DEPOSIT_FILE=$(ls "${OUTPUT_DIR}/validator_keys/deposit_data-"*.json | head -1)
+DEPOSIT_FILE=$(ls -t "${OUTPUT_DIR}/validator_keys/deposit_data-"*.json | head -1)
 
 echo "==> Generating genesis from deposit data: ${DEPOSIT_FILE}"
 
