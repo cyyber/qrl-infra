@@ -9,7 +9,7 @@ gqrl_auth_port: 8551
 gqrl_p2p_port: 30303
 gqrl_metrics_port: 6060
 execution_bootnodes: ""
-gqrl_extra_flags: ""
+gqrl_extra_flags: "--txpool.accountslots 1000 --txpool.globalslots 10000 --txpool.accountqueue 1000 --txpool.globalqueue 5000"
 
 # Beacon (qrysm)
 beacon_grpc_port: 4000
