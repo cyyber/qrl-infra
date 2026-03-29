@@ -2,12 +2,12 @@
 
 [node]
 %{ for i, host in node_hosts ~}
-${host.public_ip} ansible_user=ubuntu private_ip=${host.private_ip} public_ip=${host.public_ip} node_index=${i}
+${host.public_ip} ansible_user=ubuntu private_ip=${host.private_ip} public_ip=${host.public_ip} node_index=${i} region=${host.region}
 %{ endfor ~}
 
 [spammer]
 %{ for i, host in spammer_hosts ~}
-${host.public_ip} ansible_user=ubuntu private_ip=${host.private_ip} public_ip=${host.public_ip} node_index=${i} target_execution_ip=${node_private_ips[spammer_to_node[i]]}
+${host.public_ip} ansible_user=ubuntu private_ip=${host.private_ip} public_ip=${host.public_ip} node_index=${i} target_execution_ip=${primary_node_private_ips[spammer_to_node[i]]}
 %{ endfor ~}
 
 [monitoring]

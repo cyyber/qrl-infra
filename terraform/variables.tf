@@ -1,7 +1,18 @@
-variable "aws_region" {
-  description = "AWS region to deploy into"
-  type        = string
-  default     = "eu-north-1"
+variable "regions" {
+  description = "List of AWS regions to deploy nodes into. First region is primary (hosts S3, IAM, monitoring, spammer)."
+  type        = list(string)
+  default     = ["eu-north-1"]
+
+  validation {
+    condition = alltrue([
+      for r in var.regions : contains([
+        "eu-north-1", "us-east-1", "us-east-2", "us-west-2",
+        "eu-west-1", "eu-central-1", "ap-southeast-1",
+        "ap-northeast-1", "ap-south-1", "sa-east-1",
+      ], r)
+    ])
+    error_message = "Each region must be one of: eu-north-1, us-east-1, us-east-2, us-west-2, eu-west-1, eu-central-1, ap-southeast-1, ap-northeast-1, ap-south-1, sa-east-1."
+  }
 }
 
 variable "environment" {
@@ -15,14 +26,20 @@ variable "ssh_key_name" {
   type        = string
 }
 
+variable "ssh_public_key_path" {
+  description = "Path to SSH public key file for importing into all regions. Leave empty to use existing key_name in each region."
+  type        = string
+  default     = ""
+}
+
 variable "node_count" {
-  description = "Number of nodes (each runs execution + beacon + validator)"
+  description = "Total number of nodes. Auto-distributed equally across regions."
   type        = number
   default     = 2
 }
 
 variable "spammer_node_count" {
-  description = "Number of transaction spammer nodes"
+  description = "Number of transaction spammer nodes (deployed in primary region)"
   type        = number
   default     = 1
 }
@@ -49,18 +66,6 @@ variable "ebs_volume_size" {
   description = "EBS volume size in GB for chain data"
   type        = number
   default     = 100
-}
-
-variable "ami_id" {
-  description = "AMI ID (Ubuntu 22.04). Leave empty to auto-select latest."
-  type        = string
-  default     = ""
-}
-
-variable "vpc_cidr" {
-  description = "CIDR block for the VPC"
-  type        = string
-  default     = "10.0.0.0/16"
 }
 
 variable "deploy_mode" {
