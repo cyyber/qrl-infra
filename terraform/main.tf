@@ -125,6 +125,25 @@ module "region_us_east_2" {
   deploy_mode               = var.deploy_mode
 }
 
+module "region_us_west_1" {
+  source    = "./modules/region"
+  count     = contains(var.regions, "us-west-1") ? 1 : 0
+  providers = { aws = aws.us_west_1 }
+
+  region                    = "us-west-1"
+  region_index              = index(var.regions, "us-west-1")
+  environment               = var.environment
+  node_count                = lookup(local.region_node_counts, "us-west-1", 0)
+  node_instance_type        = var.node_instance_type
+  ebs_volume_size           = var.ebs_volume_size
+  ssh_key_name              = var.ssh_key_name
+  ssh_public_key_material   = local.ssh_public_key_material
+  iam_instance_profile_name = aws_iam_instance_profile.node.name
+  s3_bucket_id              = aws_s3_bucket.artifacts.id
+  common_tags               = local.common_tags
+  deploy_mode               = var.deploy_mode
+}
+
 module "region_us_west_2" {
   source    = "./modules/region"
   count     = contains(var.regions, "us-west-2") ? 1 : 0
@@ -191,6 +210,25 @@ module "region_ap_southeast_1" {
   region_index              = index(var.regions, "ap-southeast-1")
   environment               = var.environment
   node_count                = lookup(local.region_node_counts, "ap-southeast-1", 0)
+  node_instance_type        = var.node_instance_type
+  ebs_volume_size           = var.ebs_volume_size
+  ssh_key_name              = var.ssh_key_name
+  ssh_public_key_material   = local.ssh_public_key_material
+  iam_instance_profile_name = aws_iam_instance_profile.node.name
+  s3_bucket_id              = aws_s3_bucket.artifacts.id
+  common_tags               = local.common_tags
+  deploy_mode               = var.deploy_mode
+}
+
+module "region_ap_southeast_2" {
+  source    = "./modules/region"
+  count     = contains(var.regions, "ap-southeast-2") ? 1 : 0
+  providers = { aws = aws.ap_southeast_2 }
+
+  region                    = "ap-southeast-2"
+  region_index              = index(var.regions, "ap-southeast-2")
+  environment               = var.environment
+  node_count                = lookup(local.region_node_counts, "ap-southeast-2", 0)
   node_instance_type        = var.node_instance_type
   ebs_volume_size           = var.ebs_volume_size
   ssh_key_name              = var.ssh_key_name

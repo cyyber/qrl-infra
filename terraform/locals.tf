@@ -30,10 +30,12 @@ locals {
       region == "eu-north-1"      ? module.region_eu_north_1[0] :
       region == "us-east-1"       ? module.region_us_east_1[0] :
       region == "us-east-2"       ? module.region_us_east_2[0] :
+      region == "us-west-1"       ? module.region_us_west_1[0] :
       region == "us-west-2"       ? module.region_us_west_2[0] :
       region == "eu-west-1"       ? module.region_eu_west_1[0] :
       region == "eu-central-1"    ? module.region_eu_central_1[0] :
       region == "ap-southeast-1"  ? module.region_ap_southeast_1[0] :
+      region == "ap-southeast-2"  ? module.region_ap_southeast_2[0] :
       region == "ap-northeast-1"  ? module.region_ap_northeast_1[0] :
       region == "ap-south-1"      ? module.region_ap_south_1[0] :
       region == "sa-east-1"       ? module.region_sa_east_1[0] :
