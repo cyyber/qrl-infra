@@ -11,7 +11,7 @@ ${host.public_ip} ansible_user=ubuntu private_ip=${host.private_ip} public_ip=${
 %{ endfor ~}
 
 [monitoring]
-${monitoring_host.public_ip} ansible_user=ubuntu private_ip=${monitoring_host.private_ip}
+${monitoring_host.public_ip} ansible_user=ubuntu private_ip=${monitoring_host.private_ip} public_ip=${monitoring_host.public_ip}
 
 [all:vars]
 deploy_mode=${deploy_mode}
