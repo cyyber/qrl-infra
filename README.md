@@ -47,7 +47,7 @@ Each node runs all three services on the same machine:
 - [AWS CLI](https://aws.amazon.com/cli/) configured with credentials
 - [Go](https://go.dev/dl/) >= 1.21 (to build binaries from source)
 - [go-qrl](https://github.com/theQRL/go-qrl), [qrysm](https://github.com/theQRL/qrysm), and [qrl-tx-spammer](https://github.com/theQRL/qrl-tx-spammer) source repos as siblings (e.g. `../go-qrl`, `../qrysm`, `../qrl-tx-spammer`)
-- An EC2 key pair in your target AWS region(s)
+- An SSH public key file (e.g. `~/.ssh/id_rsa.pub`) — Terraform auto-imports it into all regions
 
 ## Quick Start
 
@@ -55,15 +55,15 @@ Each node runs all three services on the same machine:
 
 ```bash
 # Build, genesis, infra, upload, deploy — all in one
-SSH_KEY_NAME=your-key ./scripts/setup.sh 512 2 600
-#                                        ^^^  ^  ^^^
-#                                   validators nodes delay(s)
+./scripts/setup.sh --ssh-key-file ~/.ssh/id_rsa.pub 512 2 600
+#                                                   ^^^  ^  ^^^
+#                                              validators nodes delay(s)
 
 # Without transaction spammer
-SSH_KEY_NAME=your-key ./scripts/setup.sh --no-spammer 512 2 600
+./scripts/setup.sh --ssh-key-file ~/.ssh/id_rsa.pub --no-spammer 512 2 600
 
 # Restart network with same keys (skips key generation)
-SSH_KEY_NAME=your-key ./scripts/setup.sh --reuse-keys 512 2 600
+./scripts/setup.sh --ssh-key-file ~/.ssh/id_rsa.pub --reuse-keys 512 2 600
 ```
 
 ### Step by step
@@ -111,10 +111,10 @@ node_instance_type = "m5.2xlarge"
 ```bash
 cd terraform
 terraform init
-terraform apply -var="ssh_key_name=your-key"
+terraform apply -var="ssh_public_key_path=~/.ssh/id_rsa.pub"
 ```
 
-This creates EC2 instances across all configured regions and auto-generates the Ansible inventory at `ansible/inventory/hosts.ini`.
+This creates EC2 instances across all configured regions, auto-imports the SSH key into each region, and generates the Ansible inventory at `ansible/inventory/hosts.ini`.
 
 #### 5. Upload binaries to S3
 
@@ -197,10 +197,13 @@ node_count = 200
 
 ### SSH keys for multi-region
 
-EC2 key pairs are region-specific. Either create the key in each region manually, or auto-import:
+EC2 key pairs are region-specific. When you pass `ssh_public_key_path`, Terraform automatically imports the key into every region — no manual key creation needed.
 
-```hcl
-# In terraform.tfvars:
+```bash
+# Via setup.sh (recommended)
+./scripts/setup.sh --ssh-key-file ~/.ssh/id_rsa.pub 512 8 600
+
+# Or in terraform.tfvars for step-by-step usage
 ssh_public_key_path = "~/.ssh/id_rsa.pub"
 ```
 
@@ -242,7 +245,7 @@ spammer_wallet_seed: "..."  # pre-funded genesis account seed
 
 ```bash
 # Via setup script
-SSH_KEY_NAME=your-key ./scripts/setup.sh --no-spammer 512 2 600
+./scripts/setup.sh --ssh-key-file ~/.ssh/id_rsa.pub --no-spammer 512 2 600
 
 # Via terraform
 terraform apply -var="spammer_node_count=0"
@@ -289,7 +292,8 @@ cd ansible && ansible-playbook playbooks/deploy.yml -e "deploy_mode=binary"
 | `node_instance_type` | m5.2xlarge | EC2 instance type for nodes |
 | `deploy_mode` | binary | `docker` or `binary` |
 | `ebs_volume_size` | 100 | GB per data volume |
-| `ssh_public_key_path` | (empty) | Path to SSH public key for multi-region import |
+| `ssh_public_key_path` | (empty) | Path to SSH public key file — auto-imported into all regions |
+| `ssh_key_name` | `qrl-<environment>` | EC2 key pair name (auto-generated if not set) |
 
 ### Ansible variables (`ansible/group_vars/`)
 

@@ -79,7 +79,7 @@ module "region_eu_north_1" {
   node_count                = lookup(local.region_node_counts, "eu-north-1", 0)
   node_instance_type        = var.node_instance_type
   ebs_volume_size           = var.ebs_volume_size
-  ssh_key_name              = var.ssh_key_name
+  ssh_key_name              = local.ssh_key_name
   ssh_public_key_material   = local.ssh_public_key_material
   iam_instance_profile_name = aws_iam_instance_profile.node.name
   s3_bucket_id              = aws_s3_bucket.artifacts.id
@@ -98,7 +98,7 @@ module "region_us_east_1" {
   node_count                = lookup(local.region_node_counts, "us-east-1", 0)
   node_instance_type        = var.node_instance_type
   ebs_volume_size           = var.ebs_volume_size
-  ssh_key_name              = var.ssh_key_name
+  ssh_key_name              = local.ssh_key_name
   ssh_public_key_material   = local.ssh_public_key_material
   iam_instance_profile_name = aws_iam_instance_profile.node.name
   s3_bucket_id              = aws_s3_bucket.artifacts.id
@@ -117,7 +117,7 @@ module "region_us_east_2" {
   node_count                = lookup(local.region_node_counts, "us-east-2", 0)
   node_instance_type        = var.node_instance_type
   ebs_volume_size           = var.ebs_volume_size
-  ssh_key_name              = var.ssh_key_name
+  ssh_key_name              = local.ssh_key_name
   ssh_public_key_material   = local.ssh_public_key_material
   iam_instance_profile_name = aws_iam_instance_profile.node.name
   s3_bucket_id              = aws_s3_bucket.artifacts.id
@@ -136,7 +136,7 @@ module "region_us_west_1" {
   node_count                = lookup(local.region_node_counts, "us-west-1", 0)
   node_instance_type        = var.node_instance_type
   ebs_volume_size           = var.ebs_volume_size
-  ssh_key_name              = var.ssh_key_name
+  ssh_key_name              = local.ssh_key_name
   ssh_public_key_material   = local.ssh_public_key_material
   iam_instance_profile_name = aws_iam_instance_profile.node.name
   s3_bucket_id              = aws_s3_bucket.artifacts.id
@@ -155,7 +155,7 @@ module "region_us_west_2" {
   node_count                = lookup(local.region_node_counts, "us-west-2", 0)
   node_instance_type        = var.node_instance_type
   ebs_volume_size           = var.ebs_volume_size
-  ssh_key_name              = var.ssh_key_name
+  ssh_key_name              = local.ssh_key_name
   ssh_public_key_material   = local.ssh_public_key_material
   iam_instance_profile_name = aws_iam_instance_profile.node.name
   s3_bucket_id              = aws_s3_bucket.artifacts.id
@@ -174,7 +174,7 @@ module "region_eu_west_1" {
   node_count                = lookup(local.region_node_counts, "eu-west-1", 0)
   node_instance_type        = var.node_instance_type
   ebs_volume_size           = var.ebs_volume_size
-  ssh_key_name              = var.ssh_key_name
+  ssh_key_name              = local.ssh_key_name
   ssh_public_key_material   = local.ssh_public_key_material
   iam_instance_profile_name = aws_iam_instance_profile.node.name
   s3_bucket_id              = aws_s3_bucket.artifacts.id
@@ -193,7 +193,7 @@ module "region_eu_central_1" {
   node_count                = lookup(local.region_node_counts, "eu-central-1", 0)
   node_instance_type        = var.node_instance_type
   ebs_volume_size           = var.ebs_volume_size
-  ssh_key_name              = var.ssh_key_name
+  ssh_key_name              = local.ssh_key_name
   ssh_public_key_material   = local.ssh_public_key_material
   iam_instance_profile_name = aws_iam_instance_profile.node.name
   s3_bucket_id              = aws_s3_bucket.artifacts.id
@@ -212,7 +212,7 @@ module "region_ap_southeast_1" {
   node_count                = lookup(local.region_node_counts, "ap-southeast-1", 0)
   node_instance_type        = var.node_instance_type
   ebs_volume_size           = var.ebs_volume_size
-  ssh_key_name              = var.ssh_key_name
+  ssh_key_name              = local.ssh_key_name
   ssh_public_key_material   = local.ssh_public_key_material
   iam_instance_profile_name = aws_iam_instance_profile.node.name
   s3_bucket_id              = aws_s3_bucket.artifacts.id
@@ -231,7 +231,7 @@ module "region_ap_southeast_2" {
   node_count                = lookup(local.region_node_counts, "ap-southeast-2", 0)
   node_instance_type        = var.node_instance_type
   ebs_volume_size           = var.ebs_volume_size
-  ssh_key_name              = var.ssh_key_name
+  ssh_key_name              = local.ssh_key_name
   ssh_public_key_material   = local.ssh_public_key_material
   iam_instance_profile_name = aws_iam_instance_profile.node.name
   s3_bucket_id              = aws_s3_bucket.artifacts.id
@@ -250,7 +250,7 @@ module "region_ap_northeast_1" {
   node_count                = lookup(local.region_node_counts, "ap-northeast-1", 0)
   node_instance_type        = var.node_instance_type
   ebs_volume_size           = var.ebs_volume_size
-  ssh_key_name              = var.ssh_key_name
+  ssh_key_name              = local.ssh_key_name
   ssh_public_key_material   = local.ssh_public_key_material
   iam_instance_profile_name = aws_iam_instance_profile.node.name
   s3_bucket_id              = aws_s3_bucket.artifacts.id
@@ -269,7 +269,7 @@ module "region_ap_south_1" {
   node_count                = lookup(local.region_node_counts, "ap-south-1", 0)
   node_instance_type        = var.node_instance_type
   ebs_volume_size           = var.ebs_volume_size
-  ssh_key_name              = var.ssh_key_name
+  ssh_key_name              = local.ssh_key_name
   ssh_public_key_material   = local.ssh_public_key_material
   iam_instance_profile_name = aws_iam_instance_profile.node.name
   s3_bucket_id              = aws_s3_bucket.artifacts.id
@@ -288,7 +288,7 @@ module "region_sa_east_1" {
   node_count                = lookup(local.region_node_counts, "sa-east-1", 0)
   node_instance_type        = var.node_instance_type
   ebs_volume_size           = var.ebs_volume_size
-  ssh_key_name              = var.ssh_key_name
+  ssh_key_name              = local.ssh_key_name
   ssh_public_key_material   = local.ssh_public_key_material
   iam_instance_profile_name = aws_iam_instance_profile.node.name
   s3_bucket_id              = aws_s3_bucket.artifacts.id
@@ -325,7 +325,7 @@ resource "aws_instance" "spammer" {
   count                  = var.spammer_node_count
   ami                    = local.primary.ami_id
   instance_type          = var.spammer_instance_type
-  key_name               = var.ssh_key_name
+  key_name               = local.ssh_key_name
   subnet_id              = local.primary.subnet_id
   vpc_security_group_ids = [aws_security_group.spammer.id]
   iam_instance_profile   = aws_iam_instance_profile.node.name
@@ -397,7 +397,7 @@ resource "aws_security_group" "monitoring" {
 resource "aws_instance" "monitoring" {
   ami                    = local.primary.ami_id
   instance_type          = var.monitoring_instance_type
-  key_name               = var.ssh_key_name
+  key_name               = local.ssh_key_name
   subnet_id              = local.primary.subnet_id
   vpc_security_group_ids = [aws_security_group.monitoring.id]
   iam_instance_profile   = aws_iam_instance_profile.node.name
