@@ -57,33 +57,29 @@ if [ -f "$PEM_FILE" ]; then
 fi
 
 echo ""
-echo "==> Checking EC2 key pair..."
-# Try to get ssh_key_name from TF_VAR, terraform.tfvars, or *.auto.tfvars
-SSH_KEY_NAME="${TF_VAR_ssh_key_name:-}"
-if [ -z "$SSH_KEY_NAME" ]; then
+echo "==> Checking SSH public key for EC2..."
+SSH_PUB_KEY="${TF_VAR_ssh_public_key_path:-}"
+if [ -z "$SSH_PUB_KEY" ]; then
   for f in "${ROOT_DIR}"/terraform/terraform.tfvars "${ROOT_DIR}"/terraform/*.auto.tfvars; do
     if [ -f "$f" ]; then
-      val=$(grep -E '^\s*ssh_key_name\s*=' "$f" 2>/dev/null | head -1 | sed 's/.*=\s*"\?\([^"]*\)"\?.*/\1/')
+      val=$(grep -E '^\s*ssh_public_key_path\s*=' "$f" 2>/dev/null | head -1 | sed 's/.*=\s*"\?\([^"]*\)"\?.*/\1/')
       if [ -n "$val" ]; then
-        SSH_KEY_NAME="$val"
+        SSH_PUB_KEY="${val/#\~/$HOME}"
         break
       fi
     fi
   done
 fi
 
-if [ -n "$SSH_KEY_NAME" ]; then
-  AWS_REGION="${TF_VAR_aws_region:-$(grep -E '^\s*aws_region\s*=' "${ROOT_DIR}"/terraform/terraform.tfvars 2>/dev/null | head -1 | sed 's/.*=\s*"\?\([^"]*\)"\?.*/\1/' || true)}"
-  AWS_REGION="${AWS_REGION:-$(aws configure get region 2>/dev/null || echo "eu-north-1")}"
-  if aws ec2 describe-key-pairs --key-names "$SSH_KEY_NAME" --region "$AWS_REGION" &> /dev/null; then
-    echo "  OK: EC2 key pair '${SSH_KEY_NAME}' exists in ${AWS_REGION}"
+if [ -n "$SSH_PUB_KEY" ]; then
+  if [ -f "$SSH_PUB_KEY" ]; then
+    echo "  OK: SSH public key found at ${SSH_PUB_KEY}"
   else
-    echo "FAIL: EC2 key pair '${SSH_KEY_NAME}' not found in ${AWS_REGION}"
-    echo "      Create it with: aws ec2 create-key-pair --key-name ${SSH_KEY_NAME} --region ${AWS_REGION}"
+    echo "FAIL: SSH public key not found at ${SSH_PUB_KEY}"
     ERRORS=$((ERRORS + 1))
   fi
 else
-  echo "WARN: Could not determine ssh_key_name — set TF_VAR_ssh_key_name or add it to terraform/terraform.tfvars"
+  echo "WARN: ssh_public_key_path not set — pass --ssh-key-file to setup.sh or set TF_VAR_ssh_public_key_path"
 fi
 
 echo ""
