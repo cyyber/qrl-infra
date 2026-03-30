@@ -16,7 +16,7 @@ LISTEN_PORT = {{ sync_collector_port }}
 STALE_SECONDS = 30  # consider a node stale if no report for this long
 
 nodes = {}  # ip -> {block_number, block_hash, last_seen}
-block_times = {}  # block_number -> {first_seen, first_ip, last_seen, last_ip}
+block_times = {}  # block_number -> {first_seen, first_ip, last_seen, last_ip, block_hash, node_count}
 lock = threading.Lock()
 
 
@@ -60,9 +60,12 @@ class Handler(BaseHTTPRequestHandler):
                     "first_ip": ip,
                     "last_seen": seen_at,
                     "last_ip": ip,
+                    "block_hash": block_hash,
+                    "node_count": 1,
                 }
             else:
                 bt = block_times[block_number]
+                bt["node_count"] += 1
                 if seen_at < bt["first_seen"]:
                     bt["first_seen"] = seen_at
                     bt["first_ip"] = ip
@@ -73,17 +76,54 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.end_headers()
 
-    def do_GET(self):
-        if self.path != "/status":
-            self.send_error(404)
-            return
+    def _send_json(self, data):
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.end_headers()
+        self.wfile.write(json.dumps(data, indent=2).encode())
 
+    def do_GET(self):
+        if self.path == "/status":
+            self._handle_status()
+        elif self.path == "/history":
+            self._handle_history()
+        else:
+            self.send_error(404)
+
+    def _handle_history(self):
+        with lock:
+            bt_snapshot = {k: dict(v) for k, v in block_times.items()}
+
+        def fmt_time(ts):
+            return time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(ts))
+
+        sorted_blocks = sorted(bt_snapshot.items(), key=lambda x: x[0], reverse=True)
+
+        result = {
+            "total_blocks": len(sorted_blocks),
+            "blocks": [
+                {
+                    "block_number": block_num,
+                    "block_hash": bt["block_hash"],
+                    "node_count": bt["node_count"],
+                    "first_seen": fmt_time(bt["first_seen"]),
+                    "first_seen_by": bt["first_ip"],
+                    "last_seen": fmt_time(bt["last_seen"]),
+                    "last_seen_by": bt["last_ip"],
+                    "propagation_secs": round(bt["last_seen"] - bt["first_seen"], 2),
+                }
+                for block_num, bt in sorted_blocks
+            ],
+        }
+        self._send_json(result)
+
+    def _handle_status(self):
         now = time.time()
         with lock:
             snapshot = dict(nodes)
             bt_snapshot = {k: dict(v) for k, v in block_times.items()}
 
-        # Aggregate by block_number + block_hash
+        # Aggregate by block_number + block_hash (current state only)
         groups = {}
         stale = []
         for ip, info in snapshot.items():
@@ -93,7 +133,6 @@ class Handler(BaseHTTPRequestHandler):
             key = (info["block_number"], info["block_hash"])
             groups.setdefault(key, []).append(ip)
 
-        # Sort by block number descending
         sorted_groups = sorted(groups.items(), key=lambda x: x[0][0], reverse=True)
 
         def fmt_time(ts):
@@ -119,11 +158,7 @@ class Handler(BaseHTTPRequestHandler):
             ],
             "stale_nodes": stale,
         }
-
-        self.send_response(200)
-        self.send_header("Content-Type", "application/json")
-        self.end_headers()
-        self.wfile.write(json.dumps(result, indent=2).encode())
+        self._send_json(result)
 
 
 if __name__ == "__main__":
