@@ -1,0 +1,14 @@
+---
+- name: restart sync-collector
+  systemd:
+    name: sync-collector
+    state: restarted
+    daemon_reload: true
+  become: true
+
+- name: restart sync-reporter
+  systemd:
+    name: sync-reporter
+    state: restarted
+    daemon_reload: true
+  become: true

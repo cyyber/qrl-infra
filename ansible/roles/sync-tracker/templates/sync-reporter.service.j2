@@ -1,0 +1,16 @@
+[Unit]
+Description=QRL Sync Reporter
+After=network-online.target gqrl.service
+Wants=network-online.target
+Requires=gqrl.service
+
+[Service]
+Type=simple
+User=qrl
+Group=qrl
+ExecStart=/usr/bin/python3 {{ data_dir }}/sync-tracker/sync-reporter.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

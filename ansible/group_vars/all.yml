@@ -35,3 +35,7 @@ beacon_rpc_endpoint: "127.0.0.1:4000"
 
 # Accept terms of service for non-interactive runs
 accept_tos: true
+
+# Sync tracker
+sync_collector_port: 9100
+sync_report_interval: 10  # seconds between reports

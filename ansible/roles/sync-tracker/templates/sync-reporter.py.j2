@@ -1,0 +1,92 @@
+#!/usr/bin/env python3
+"""
+Sync Reporter — runs on each node.
+Tails gqrl.log for "Imported new potential chain segment" lines
+to get exact block arrival timestamps, then reports to the collector.
+"""
+
+import json
+import re
+import subprocess
+import time
+import urllib.request
+from datetime import datetime, timezone
+
+LOG_PATH = "{{ data_dir }}/logs/gqrl.log"
+COLLECTOR_URL = "http://{{ collector_ip }}:{{ sync_collector_port }}/report"
+NODE_IP = "{{ public_ip }}"
+HEARTBEAT_INTERVAL = {{ sync_report_interval }}
+
+# INFO [03-29|20:27:01.720] Imported new potential chain segment     number=250 hash=a155dd..7c0821
+LOG_PATTERN = re.compile(
+    r"INFO \[(\d{2}-\d{2}\|\d{2}:\d{2}:\d{2}\.\d{3})\] Imported new potential chain segment\s+"
+    r"number=(\d+)\s+hash=([0-9a-f.]+)"
+)
+
+
+def parse_log_time(ts_str):
+    """Parse gqrl timestamp like '03-29|20:27:01.720' into unix timestamp."""
+    year = datetime.now(timezone.utc).year
+    dt = datetime.strptime(f"{year}-{ts_str}", "%Y-%m-%d|%H:%M:%S.%f")
+    dt = dt.replace(tzinfo=timezone.utc)
+    return dt.timestamp()
+
+
+def report(block_number, block_hash, seen_at):
+    payload = json.dumps({
+        "ip": NODE_IP,
+        "block_number": block_number,
+        "block_hash": block_hash,
+        "seen_at": seen_at,
+    }).encode()
+
+    req = urllib.request.Request(
+        COLLECTOR_URL,
+        data=payload,
+        headers={"Content-Type": "application/json"},
+    )
+    urllib.request.urlopen(req, timeout=5)
+
+
+if __name__ == "__main__":
+    print(f"Sync reporter: node={NODE_IP}, collector={COLLECTOR_URL}, log={LOG_PATH}")
+
+    last_block_number = None
+    last_block_hash = None
+    last_seen_at = None
+    last_report_time = 0
+
+    # tail -F: follows by name (handles rotation), uses inotify (no busy-wait)
+    # -n 0: start from end, only new lines
+    proc = subprocess.Popen(
+        ["tail", "-F", "-n", "0", LOG_PATH],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        text=True,
+    )
+
+    for line in proc.stdout:
+        line = line.rstrip()
+        match = LOG_PATTERN.search(line)
+        if match:
+            ts_str, number_str, block_hash = match.groups()
+            block_number = int(number_str)
+            seen_at = parse_log_time(ts_str)
+
+            last_block_number = block_number
+            last_block_hash = block_hash
+            last_seen_at = seen_at
+
+            try:
+                report(block_number, block_hash, seen_at)
+                last_report_time = time.time()
+            except Exception as e:
+                print(f"Report error: {e}")
+
+        # Send heartbeat if no new block for a while
+        elif last_block_number is not None and time.time() - last_report_time > HEARTBEAT_INTERVAL:
+            try:
+                report(last_block_number, last_block_hash, last_seen_at)
+                last_report_time = time.time()
+            except Exception as e:
+                print(f"Heartbeat error: {e}")

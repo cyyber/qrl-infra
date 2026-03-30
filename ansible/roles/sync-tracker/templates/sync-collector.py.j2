@@ -1,0 +1,132 @@
+#!/usr/bin/env python3
+"""
+Sync Collector — runs on the monitoring node.
+Receives block reports from all nodes and serves an aggregated view.
+
+POST /report  — nodes send {"ip": "...", "block_number": 123, "block_hash": "0x..."}
+GET  /status  — returns aggregated sync status
+"""
+
+import json
+import time
+import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
+
+LISTEN_PORT = {{ sync_collector_port }}
+STALE_SECONDS = 30  # consider a node stale if no report for this long
+
+nodes = {}  # ip -> {block_number, block_hash, last_seen}
+block_times = {}  # block_number -> {first_seen, first_ip, last_seen, last_ip}
+lock = threading.Lock()
+
+
+class Handler(BaseHTTPRequestHandler):
+    def log_message(self, format, *args):
+        pass  # silence request logs
+
+    def do_POST(self):
+        if self.path != "/report":
+            self.send_error(404)
+            return
+
+        length = int(self.headers.get("Content-Length", 0))
+        body = self.rfile.read(length)
+        try:
+            data = json.loads(body)
+        except (json.JSONDecodeError, ValueError):
+            self.send_error(400)
+            return
+
+        ip = data.get("ip", self.client_address[0])
+        block_number = data.get("block_number")
+        block_hash = data.get("block_hash")
+        seen_at = data.get("seen_at")  # node-local timestamp when it first saw this block
+
+        if block_number is None or block_hash is None or seen_at is None:
+            self.send_error(400)
+            return
+
+        now = time.time()
+        with lock:
+            nodes[ip] = {
+                "block_number": block_number,
+                "block_hash": block_hash,
+                "last_seen": now,
+            }
+
+            if block_number not in block_times:
+                block_times[block_number] = {
+                    "first_seen": seen_at,
+                    "first_ip": ip,
+                    "last_seen": seen_at,
+                    "last_ip": ip,
+                }
+            else:
+                bt = block_times[block_number]
+                if seen_at < bt["first_seen"]:
+                    bt["first_seen"] = seen_at
+                    bt["first_ip"] = ip
+                if seen_at > bt["last_seen"]:
+                    bt["last_seen"] = seen_at
+                    bt["last_ip"] = ip
+
+        self.send_response(200)
+        self.end_headers()
+
+    def do_GET(self):
+        if self.path != "/status":
+            self.send_error(404)
+            return
+
+        now = time.time()
+        with lock:
+            snapshot = dict(nodes)
+            bt_snapshot = {k: dict(v) for k, v in block_times.items()}
+
+        # Aggregate by block_number + block_hash
+        groups = {}
+        stale = []
+        for ip, info in snapshot.items():
+            if now - info["last_seen"] > STALE_SECONDS:
+                stale.append(ip)
+                continue
+            key = (info["block_number"], info["block_hash"])
+            groups.setdefault(key, []).append(ip)
+
+        # Sort by block number descending
+        sorted_groups = sorted(groups.items(), key=lambda x: x[0][0], reverse=True)
+
+        def fmt_time(ts):
+            return time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(ts))
+
+        result = {
+            "timestamp": int(now),
+            "total_reporting": len(snapshot) - len(stale),
+            "total_stale": len(stale),
+            "blocks": [
+                {
+                    "block_number": block_num,
+                    "block_hash": block_hash,
+                    "node_count": len(ips),
+                    "first_seen": fmt_time(bt_snapshot[block_num]["first_seen"]) if block_num in bt_snapshot else None,
+                    "first_seen_by": bt_snapshot[block_num]["first_ip"] if block_num in bt_snapshot else None,
+                    "last_seen": fmt_time(bt_snapshot[block_num]["last_seen"]) if block_num in bt_snapshot else None,
+                    "last_seen_by": bt_snapshot[block_num]["last_ip"] if block_num in bt_snapshot else None,
+                    "propagation_secs": round(bt_snapshot[block_num]["last_seen"] - bt_snapshot[block_num]["first_seen"], 2) if block_num in bt_snapshot else None,
+                    "nodes": ips,
+                }
+                for (block_num, block_hash), ips in sorted_groups
+            ],
+            "stale_nodes": stale,
+        }
+
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.end_headers()
+        self.wfile.write(json.dumps(result, indent=2).encode())
+
+
+if __name__ == "__main__":
+    server = HTTPServer(("0.0.0.0", LISTEN_PORT), Handler)
+    print(f"Sync collector listening on :{LISTEN_PORT}")
+    server.serve_forever()

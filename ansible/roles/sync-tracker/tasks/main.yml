@@ -1,0 +1,60 @@
+---
+- name: Create sync-tracker directory
+  file:
+    path: "{{ data_dir }}/sync-tracker"
+    state: directory
+    owner: qrl
+    group: qrl
+    mode: "0755"
+
+- name: Deploy sync collector
+  when: "'monitoring' in group_names"
+  block:
+    - name: Copy sync-collector script
+      template:
+        src: sync-collector.py.j2
+        dest: "{{ data_dir }}/sync-tracker/sync-collector.py"
+        owner: qrl
+        group: qrl
+        mode: "0755"
+
+    - name: Copy sync-collector service
+      template:
+        src: sync-collector.service.j2
+        dest: /etc/systemd/system/sync-collector.service
+      become: true
+      notify: restart sync-collector
+
+    - name: Enable and start sync-collector
+      systemd:
+        name: sync-collector
+        enabled: true
+        state: started
+        daemon_reload: true
+      become: true
+
+- name: Deploy sync reporter
+  when: "'node' in group_names"
+  block:
+    - name: Copy sync-reporter script
+      template:
+        src: sync-reporter.py.j2
+        dest: "{{ data_dir }}/sync-tracker/sync-reporter.py"
+        owner: qrl
+        group: qrl
+        mode: "0755"
+
+    - name: Copy sync-reporter service
+      template:
+        src: sync-reporter.service.j2
+        dest: /etc/systemd/system/sync-reporter.service
+      become: true
+      notify: restart sync-reporter
+
+    - name: Enable and start sync-reporter
+      systemd:
+        name: sync-reporter
+        enabled: true
+        state: started
+        daemon_reload: true
+      become: true

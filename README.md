@@ -308,6 +308,70 @@ The pre-configured dashboard tracks:
 - Peer counts (beacon + execution)
 - TX pool size & block gas used
 
+### Sync tracker
+
+A lightweight push-based system for tracking block propagation across all nodes in real time. Each node tails its local `gqrl.log` for new block imports and reports to a central collector on the monitoring node.
+
+```
+Each node                              Monitoring node
+┌──────────────────┐                  ┌────────────────────┐
+│ sync-reporter    │──POST /report──> │  sync-collector    │
+│ (tails gqrl.log) │  {block, hash,   │  (HTTP server)     │
+│                  │   seen_at}       │                    │
+└──────────────────┘                  │  GET /status       │<── you
+                                      │  aggregated JSON   │
+                                      └────────────────────┘
+```
+
+**How it works:**
+- The reporter uses `tail -F` on `gqrl.log` to detect `Imported new potential chain segment` log lines instantly
+- The `seen_at` timestamp comes directly from the gqrl log (millisecond precision) — no polling delay
+- The collector aggregates reports and tracks first/last seen time per block number for propagation measurement
+- Nodes send a heartbeat every 10s so the collector can detect stale/unreachable nodes
+
+**Query sync status:**
+
+```bash
+# Via script
+./scripts/sync-status.sh
+
+# Or directly
+curl http://<monitoring-ip>:9100/status | jq .
+```
+
+**Example output:**
+
+```
+===========================================
+  BLOCK STATUS
+===========================================
+
+  Block 48230 (0x3a7f1c29...8b4e2d01): 1962 nodes
+    First seen: 2026-03-30 14:02:11 by 13.48.22.101
+    Last seen:  2026-03-30 14:02:12 by 52.77.45.88
+    Propagation: 1.24s
+
+  Block 48229 (0xb1c8e4a2...f09d3c67): 30 nodes
+    First seen: 2026-03-30 14:01:59 by 13.48.22.101
+    Last seen:  2026-03-30 14:02:00 by 18.162.33.72
+    Propagation: 0.89s
+
+===========================================
+  SUMMARY
+===========================================
+
+  Reporting:    1997
+  Stale:        3
+  Unique blocks: 2
+```
+
+**Configuration** (`ansible/group_vars/all.yml`):
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `sync_collector_port` | 9100 | Port for the collector HTTP server |
+| `sync_report_interval` | 10 | Heartbeat interval in seconds |
+
 ## Validator recommendations
 
 With QRL's `SLOTS_PER_EPOCH=128`, use enough validators for stable consensus:
@@ -346,7 +410,8 @@ qrl-infra/
 │   │   ├── beacon/            # qrysm beacon (docker.yml + binary.yml)
 │   │   ├── validator/         # qrysm validator (docker.yml + binary.yml)
 │   │   ├── spammer/           # qrl-tx-spammer (docker.yml + binary.yml)
-│   │   └── monitoring/        # Prometheus + Grafana
+│   │   ├── monitoring/        # Prometheus + Grafana
+│   │   └── sync-tracker/      # Block propagation tracking (reporter + collector)
 │   └── group_vars/            # Per-group configuration
 ├── build/                     # Built binaries (git-ignored)
 ├── scripts/
@@ -354,7 +419,8 @@ qrl-infra/
 │   ├── genesis.sh             # Genesis generation + S3 upload
 │   ├── build-and-upload.sh    # Build binaries + upload to S3
 │   ├── stress.sh              # Stress test orchestration
-│   └── collect.sh             # Log/metric collection
+│   ├── collect.sh             # Log/metric collection
+│   └── sync-status.sh         # Query sync collector for block status
 └── monitoring/
     ├── prometheus/             # Scrape configs + alerts
     └── grafana/                # Dashboards + provisioning

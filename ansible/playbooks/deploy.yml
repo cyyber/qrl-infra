@@ -113,3 +113,17 @@
   hosts: monitoring
   roles:
     - monitoring
+
+# --- Phase 5: Sync tracker ---
+
+- name: Deploy sync collector on monitoring node
+  hosts: monitoring
+  roles:
+    - sync-tracker
+
+- name: Deploy sync reporter on all nodes
+  hosts: node
+  vars:
+    collector_ip: "{{ hostvars[groups['monitoring'][0]]['public_ip'] }}"
+  roles:
+    - sync-tracker
