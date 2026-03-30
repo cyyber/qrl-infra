@@ -39,26 +39,32 @@ echo "$RESPONSE" | jq -r '
   "  BLOCK STATUS",
   "===========================================",
   "",
-  (.blocks[] |
-    "  Block \(.block_number) (\(.block_hash[:10])...\(.block_hash[-8:])): \(.node_count) nodes",
-    "    First seen: \(.first_seen) by \(.first_seen_by)",
-    "    Last seen:  \(.last_seen) by \(.last_seen_by)",
-    "    Propagation: \(.propagation_secs)s",
-    ""
-  ),
+  (if (.blocks | length) > 0 then
+    (.blocks[] |
+      "  Block \(.block_number) (\(.block_hash[:10])...\(.block_hash[-8:])): \(.node_count) nodes",
+      "    First seen: \(.first_seen) by \(.first_seen_by)",
+      "    Last seen:  \(.last_seen) by \(.last_seen_by)",
+      "    Propagation: \(.propagation_secs)s",
+      ""
+    )
+  else
+    "  No blocks reported yet."
+  end),
   "",
   "===========================================",
   "  SUMMARY",
   "===========================================",
   "",
-  "  Reporting:    \(.total_reporting)",
-  "  Stale:        \(.total_stale)",
+  "  Reporting:     \(.total_reporting)",
+  "  Stale:         \(.total_stale)",
   "  Unique blocks: \(.blocks | length)",
   "",
-  (if .blocks | length <= 1 and .total_stale == 0 and .total_reporting > 0 then
+  (if (.blocks | length) <= 1 and .total_stale == 0 and .total_reporting > 0 then
     "  Status: ALL NODES IN SYNC"
   elif .total_stale > 0 then
     "  Status: \(.total_stale) NODES STALE (no report in 30s)"
+  elif .total_reporting == 0 then
+    "  Status: NO NODES REPORTING — check sync-reporter service on nodes"
   else
     ""
   end)
