@@ -1,8 +1,7 @@
 [Unit]
 Description=QRL Beacon Chain (qrysm)
 After=network-online.target gqrl.service
-Wants=network-online.target
-Requires=gqrl.service
+Wants=network-online.target gqrl.service
 
 [Service]
 Type=simple
