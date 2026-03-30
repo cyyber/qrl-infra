@@ -14,6 +14,7 @@ locals {
 
   primary_region = var.regions[0]
 
+  ssh_key_name            = var.ssh_key_name != "" ? var.ssh_key_name : "qrl-${var.environment}"
   ssh_public_key_material = var.ssh_public_key_path != "" ? file(var.ssh_public_key_path) : ""
 
   common_tags = {

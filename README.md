@@ -59,6 +59,9 @@ Each node runs all three services on the same machine:
 #                                                   ^^^  ^  ^^^
 #                                              validators nodes delay(s)
 
+# With transaction spammer (enabled by default)
+./scripts/setup.sh --ssh-key-file ~/.ssh/id_rsa.pub --spammer 512 2 600
+
 # Without transaction spammer
 ./scripts/setup.sh --ssh-key-file ~/.ssh/id_rsa.pub --no-spammer 512 2 600
 

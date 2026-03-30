@@ -22,8 +22,9 @@ variable "environment" {
 }
 
 variable "ssh_key_name" {
-  description = "Name of an existing EC2 key pair for SSH access"
+  description = "Name to register the EC2 key pair under. Auto-generated from environment if not set."
   type        = string
+  default     = ""
 }
 
 variable "ssh_public_key_path" {
