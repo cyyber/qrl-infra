@@ -251,7 +251,7 @@ echo "==> Step 7: Starting validators..."
 for i in "${!NODES[@]}"; do
   NODE="${NODES[$i]}"
 
-  ssh "$NODE" "sudo -u qrl validator accounts import --keys-dir /data/validator/keystores --wallet-dir /data/validator/wallet --wallet-password-file /data/validator/keystore-password.txt --account-password-file /data/validator/keystore-password.txt 2>/dev/null"
+  ssh "$NODE" "sudo -u qrl validator accounts import --keys-dir /data/validator/keystores --wallet-dir /data/validator/wallet --wallet-password-file /data/validator/keystore-password.txt --account-password-file /data/validator/keystore-password.txt --accept-terms-of-use 2>/dev/null"
 
   ssh "$NODE" "sudo -u qrl bash -c 'nohup validator --datadir /data/validator --wallet-dir /data/validator/wallet --wallet-password-file /data/validator/keystore-password.txt --beacon-rpc-provider 127.0.0.1:4000 --chain-config-file /data/config.yml --accept-terms-of-use > /data/logs/validator.log 2>&1 &'"
 
