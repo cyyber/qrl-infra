@@ -106,7 +106,7 @@ for i in "${!NODES[@]}"; do
   NODE="${NODES[$i]}"
   echo "    [$((i+1))/${NUM_NODES}] ${NODE}"
 
-  ssh "$NODE" "id -u qrl &>/dev/null || sudo useradd -r -s /bin/false qrl; sudo mkdir -p /data/{execution,beacon,validator/wallet,logs}; sudo chown -R qrl:qrl /data"
+  ssh "$NODE" "id -u qrl &>/dev/null || sudo useradd -r -m -s /bin/false qrl; sudo mkdir -p /data/{execution,beacon,validator/wallet,logs}; sudo chown -R qrl:qrl /data"
 
   scp -q "${GENESIS_DIR}"/{jwt.hex,genesis.json,genesis.ssz,config.yml} "${NODE}:/tmp/"
   ssh "$NODE" "sudo mv /tmp/jwt.hex /tmp/genesis.json /tmp/genesis.ssz /tmp/config.yml /data/ && sudo chown qrl:qrl /data/{jwt.hex,genesis.json,genesis.ssz,config.yml}"

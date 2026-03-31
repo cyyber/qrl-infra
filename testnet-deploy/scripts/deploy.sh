@@ -59,7 +59,7 @@ for i in "${!NODES[@]}"; do
   echo "==> [$((i+1))/${#NODES[@]}] ${NODE}"
 
   echo "    Creating directories and qrl user..."
-  ssh "$NODE" "id -u qrl &>/dev/null || sudo useradd -r -s /bin/false qrl; sudo mkdir -p /data/{execution,beacon,validator/wallet,logs}; sudo chown -R qrl:qrl /data"
+  ssh "$NODE" "id -u qrl &>/dev/null || sudo useradd -r -m -s /bin/false qrl; sudo mkdir -p /data/{execution,beacon,validator/wallet,logs}; sudo chown -R qrl:qrl /data"
 
   echo "    Copying genesis files..."
   scp -q "${GENESIS_DIR}"/{jwt.hex,genesis.json,genesis.ssz,config.yml} "${NODE}:/tmp/"
