@@ -36,7 +36,7 @@ start_beacon() {
   fi
 
   ssh "$node" "sudo killall beacon-chain 2>/dev/null || true; sleep 2"
-  ssh "$node" "sudo -u qrl bash -c 'nohup beacon-chain --datadir /data/beacon --execution-endpoint http://127.0.0.1:8551 --jwt-secret /data/jwt.hex --genesis-state /data/genesis.ssz --chain-config-file /data/config.yml --p2p-host-ip ${ip} --p2p-tcp-port 13000 --p2p-udp-port 12000 --rpc-host 0.0.0.0 --rpc-port 4000 --grpc-gateway-host 0.0.0.0 --grpc-gateway-port 3500 --min-sync-peers 1 --accept-terms-of-use --p2p-static-id ${bootstrap_flag} > /data/logs/beacon-chain.log 2>&1 &'"
+  ssh "$node" "sudo -u qrl bash -c 'nohup beacon-chain --datadir /data/beacon --execution-endpoint http://127.0.0.1:8551 --jwt-secret /data/jwt.hex --genesis-state /data/genesis.ssz --chain-config-file /data/config.yml --p2p-host-ip ${ip} --p2p-local-ip 0.0.0.0 --p2p-tcp-port 13000 --p2p-udp-port 12000 --rpc-host 0.0.0.0 --rpc-port 4000 --grpc-gateway-host 0.0.0.0 --grpc-gateway-port 3500 --min-sync-peers 1 --accept-terms-of-use --p2p-static-id ${bootstrap_flag} > /data/logs/beacon-chain.log 2>&1 &'"
 }
 
 get_beacon_qnr() {

@@ -87,20 +87,6 @@ if [ "$REUSE_KEYS" = "true" ]; then
 fi
 EXECUTION_ADDRESS="${EXECUTION_ADDRESS}" ./scripts/genesis.sh ${GENESIS_FLAGS} "${NUM_VALIDATORS}" "${NUM_NODES}" "${GENESIS_DELAY}" 2>&1 | tee "${ROOT_DIR}/genesis-output.log"
 
-# Patch genesis.json to prefund the execution address
-python3 -c "
-import json
-with open('genesis-data/genesis.json') as f:
-    g = json.load(f)
-addr = '${EXECUTION_ADDRESS}'
-default_addr = 'Qaf84bc06703edfc371a0177ac8b482622d5ad242'
-if addr != default_addr and default_addr in g['alloc']:
-    g['alloc'][addr] = g['alloc'].pop(default_addr)
-with open('genesis-data/genesis.json', 'w') as f:
-    json.dump(g, f, indent='\t')
-print(f'    Prefunded address: {addr}')
-"
-
 cp -r genesis-data "${ROOT_DIR}/"
 
 # Extract and display the mnemonic
