@@ -133,18 +133,7 @@ for i in "${!NODES[@]}"; do
   NODE="${NODES[$i]}"
   IP=$(echo "$NODE" | cut -d@ -f2)
 
-  ssh "$NODE" "sudo -u qrl bash -c 'nohup gqrl \
-    --datadir /data/execution \
-    --http --http.addr 0.0.0.0 --http.port 8545 \
-    --http.api qrl,net,web3 \
-    --authrpc.addr 0.0.0.0 --authrpc.port 8551 \
-    --authrpc.jwtsecret /data/jwt.hex \
-    --authrpc.vhosts=* \
-    --port 30303 \
-    --syncmode full \
-    --nat extip:${IP} \
-    --networkid 1337 \
-    > /data/logs/gqrl.log 2>&1 &'"
+  ssh "$NODE" "sudo -u qrl bash -c 'nohup gqrl --datadir /data/execution --http --http.addr 0.0.0.0 --http.port 8545 --http.api qrl,net,web3 --authrpc.addr 0.0.0.0 --authrpc.port 8551 --authrpc.jwtsecret /data/jwt.hex --authrpc.vhosts=* --port 30303 --syncmode full --nat extip:${IP} --networkid 1337 > /data/logs/gqrl.log 2>&1 &'"
 
   echo "    Node ${i}: gqrl started"
 done
@@ -206,23 +195,8 @@ start_beacon() {
     bootstrap_flag="--bootstrap-node ${bootstrap}"
   fi
 
-  ssh "$node" "sudo pkill -f 'beacon-chain --datadir' 2>/dev/null || true; sleep 2"
-  ssh "$node" "sudo -u qrl bash -c 'nohup beacon-chain \
-    --datadir /data/beacon \
-    --execution-endpoint http://127.0.0.1:8551 \
-    --jwt-secret /data/jwt.hex \
-    --genesis-state /data/genesis.ssz \
-    --chain-config-file /data/config.yml \
-    --p2p-host-ip ${ip} \
-    --p2p-tcp-port 13000 \
-    --p2p-udp-port 12000 \
-    --rpc-host 0.0.0.0 --rpc-port 4000 \
-    --grpc-gateway-host 0.0.0.0 --grpc-gateway-port 3500 \
-    --min-sync-peers 1 \
-    --accept-terms-of-use \
-    --p2p-static-id \
-    ${bootstrap_flag} \
-    > /data/logs/beacon-chain.log 2>&1 &'"
+  ssh "$node" "sudo killall beacon-chain 2>/dev/null || true; sleep 2"
+  ssh "$node" "sudo -u qrl bash -c 'nohup beacon-chain --datadir /data/beacon --execution-endpoint http://127.0.0.1:8551 --jwt-secret /data/jwt.hex --genesis-state /data/genesis.ssz --chain-config-file /data/config.yml --p2p-host-ip ${ip} --p2p-tcp-port 13000 --p2p-udp-port 12000 --rpc-host 0.0.0.0 --rpc-port 4000 --grpc-gateway-host 0.0.0.0 --grpc-gateway-port 3500 --min-sync-peers 1 --accept-terms-of-use --p2p-static-id ${bootstrap_flag} > /data/logs/beacon-chain.log 2>&1 &'"
 }
 
 get_beacon_qnr() {
@@ -277,21 +251,9 @@ echo "==> Step 7: Starting validators..."
 for i in "${!NODES[@]}"; do
   NODE="${NODES[$i]}"
 
-  ssh "$NODE" "sudo -u qrl validator accounts import \
-    --keys-dir /data/validator/keystores \
-    --wallet-dir /data/validator/wallet \
-    --wallet-password-file /data/validator/keystore-password.txt \
-    --account-password-file /data/validator/keystore-password.txt \
-    2>/dev/null"
+  ssh "$NODE" "sudo -u qrl validator accounts import --keys-dir /data/validator/keystores --wallet-dir /data/validator/wallet --wallet-password-file /data/validator/keystore-password.txt --account-password-file /data/validator/keystore-password.txt 2>/dev/null"
 
-  ssh "$NODE" "sudo -u qrl bash -c 'nohup validator \
-    --datadir /data/validator \
-    --wallet-dir /data/validator/wallet \
-    --wallet-password-file /data/validator/keystore-password.txt \
-    --beacon-rpc-provider 127.0.0.1:4000 \
-    --chain-config-file /data/config.yml \
-    --accept-terms-of-use \
-    > /data/logs/validator.log 2>&1 &'"
+  ssh "$NODE" "sudo -u qrl bash -c 'nohup validator --datadir /data/validator --wallet-dir /data/validator/wallet --wallet-password-file /data/validator/keystore-password.txt --beacon-rpc-provider 127.0.0.1:4000 --chain-config-file /data/config.yml --accept-terms-of-use > /data/logs/validator.log 2>&1 &'"
 
   echo "    Node ${i}: validator started"
 done

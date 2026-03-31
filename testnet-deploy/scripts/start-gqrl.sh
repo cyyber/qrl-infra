@@ -22,22 +22,10 @@ done < "$NODES_FILE"
 
 for i in "${!NODES[@]}"; do
   NODE="${NODES[$i]}"
-  # Extract IP from user@ip
   IP=$(echo "$NODE" | cut -d@ -f2)
 
   echo "==> Starting gqrl on ${NODE} (extip: ${IP})..."
-  ssh "$NODE" "sudo -u qrl bash -c 'nohup gqrl \
-    --datadir /data/execution \
-    --http --http.addr 0.0.0.0 --http.port 8545 \
-    --http.api qrl,net,web3 \
-    --authrpc.addr 0.0.0.0 --authrpc.port 8551 \
-    --authrpc.jwtsecret /data/jwt.hex \
-    --authrpc.vhosts=* \
-    --port 30303 \
-    --syncmode full \
-    --nat extip:${IP} \
-    --networkid 1337 \
-    > /data/logs/gqrl.log 2>&1 &'"
+  ssh "$NODE" "sudo -u qrl bash -c 'nohup gqrl --datadir /data/execution --http --http.addr 0.0.0.0 --http.port 8545 --http.api qrl,net,web3 --authrpc.addr 0.0.0.0 --authrpc.port 8551 --authrpc.jwtsecret /data/jwt.hex --authrpc.vhosts=* --port 30303 --syncmode full --nat extip:${IP} --networkid 1337 > /data/logs/gqrl.log 2>&1 &'"
 
   echo "    Started gqrl on ${NODE}"
 done
