@@ -1,0 +1,4 @@
+# One node per line: user@ip
+# Lines starting with # are ignored
+ubuntu@54.123.45.67
+ubuntu@18.234.56.78
